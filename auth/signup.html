@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create account — ShareFIT</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #0a0a0a;
+      --white:   #f5f5f5;
+      --muted:   #737373;
+      --surface: #141414;
+      --border:  #2e2e2e;
+      --card-bg: #111111;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--black); color: var(--white);
+      min-height: 100vh; display: flex; flex-direction: column;
+    }
+
+    /* ── Nav ── */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.25rem 5%;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px; color: var(--white); text-decoration: none; }
+    .nav-link { color: var(--muted); text-decoration: none; font-size: 0.88rem; transition: color 0.2s; }
+    .nav-link:hover { color: var(--white); }
+
+    /* ── Layout ── */
+    main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 3rem 1.5rem; }
+    .auth-card { width: 100%; max-width: 440px; }
+
+    .auth-header { margin-bottom: 2rem; }
+    .auth-header h1 { font-size: 2rem; font-weight: 900; letter-spacing: -1px; margin-bottom: 0.35rem; }
+    .auth-header p  { color: var(--muted); font-size: 0.95rem; }
+
+    /* ── Form ── */
+    .form-group { margin-bottom: 1.15rem; }
+
+    label {
+      display: block; font-size: 0.83rem; font-weight: 600;
+      color: #bbb; margin-bottom: 0.45rem; letter-spacing: 0.02em;
+    }
+    .field-hint { font-size: 0.75rem; color: var(--muted); margin-top: 0.35rem; }
+
+    .input-wrap { position: relative; }
+
+    input[type="email"],
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      background: var(--card-bg); border: 1px solid var(--border);
+      color: var(--white); padding: 0.82rem 1rem;
+      border-radius: 0.6rem; font-size: 0.95rem; font-family: inherit;
+      outline: none; transition: border-color 0.2s; -webkit-appearance: none;
+    }
+    input:focus { border-color: #555; }
+    input::placeholder { color: #333; }
+    input.has-icon { padding-right: 3.2rem; }
+    input.error-field { border-color: rgba(200,60,60,0.5); }
+
+    .pw-toggle {
+      position: absolute; right: 0.9rem; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: 0.8rem; font-family: inherit;
+      padding: 0.2rem; transition: color 0.2s; user-select: none;
+    }
+    .pw-toggle:hover { color: var(--white); }
+
+    /* ── Password strength meter ── */
+    .strength-wrap { margin-top: 0.55rem; }
+    .strength-bars {
+      display: flex; gap: 4px; margin-bottom: 0.3rem;
+    }
+    .strength-bars span {
+      flex: 1; height: 3px; border-radius: 999px;
+      background: var(--border); transition: background 0.25s;
+    }
+    .strength-label { font-size: 0.75rem; color: var(--muted); }
+
+    /* filled bar colors (monochrome only) */
+    .s1 .b1                         { background: #555; }
+    .s2 .b1, .s2 .b2                { background: #888; }
+    .s3 .b1, .s3 .b2, .s3 .b3      { background: #bbb; }
+    .s4 .b1, .s4 .b2, .s4 .b3, .s4 .b4 { background: var(--white); }
+
+    /* ── Error / info boxes ── */
+    .error-box {
+      display: none;
+      background: rgba(200,60,60,0.08); border: 1px solid rgba(200,60,60,0.22);
+      border-radius: 0.6rem; padding: 0.8rem 1rem;
+      margin-bottom: 1.2rem; font-size: 0.875rem; color: #e88; line-height: 1.6;
+    }
+    .error-box.show { display: block; }
+    .error-box ul { padding-left: 1.1rem; }
+    .error-box li { margin-bottom: 0.2rem; }
+
+    /* ── Submit ── */
+    .btn {
+      width: 100%; background: var(--white); color: var(--black);
+      border: none; padding: 0.88rem; border-radius: 0.6rem;
+      font-size: 0.97rem; font-weight: 800; font-family: inherit;
+      cursor: pointer; margin-top: 0.4rem;
+      transition: background 0.2s, opacity 0.2s; letter-spacing: -0.01em;
+    }
+    .btn:hover { background: #d4d4d4; }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .divider { border: none; border-top: 1px solid var(--border); margin: 1.75rem 0; }
+    .auth-footer { text-align: center; font-size: 0.88rem; color: var(--muted); }
+    .auth-footer a { color: var(--white); font-weight: 600; text-decoration: none; }
+    .auth-footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="/" class="logo">ShareFIT</a>
+    <a href="/auth/login.html" class="nav-link">Log in →</a>
+  </nav>
+
+  <main>
+    <div class="auth-card">
+
+      <div class="auth-header">
+        <h1>Create account</h1>
+        <p>Join the ShareFIT community</p>
+      </div>
+
+      <div class="error-box" id="error-box" role="alert" aria-live="polite"></div>
+
+      <form id="signup-form" novalidate>
+
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username"
+                 placeholder="e.g. jane_doe" autocomplete="username"
+                 maxlength="30" required />
+          <p class="field-hint">3–30 characters. Letters, numbers, _, . and - only.</p>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email address</label>
+          <input type="email" id="email" name="email"
+                 placeholder="you@example.com" autocomplete="email" required />
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="input-wrap">
+            <input type="password" id="password" name="password"
+                   class="has-icon" placeholder="Create a strong password"
+                   autocomplete="new-password" required />
+            <button type="button" class="pw-toggle" id="pw-toggle"
+                    aria-label="Toggle password visibility">Show</button>
+          </div>
+          <div class="strength-wrap">
+            <div class="strength-bars" id="strength-bars" aria-hidden="true">
+              <span class="b1"></span>
+              <span class="b2"></span>
+              <span class="b3"></span>
+              <span class="b4"></span>
+            </div>
+            <span class="strength-label" id="strength-label"></span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="confirm-password">Confirm password</label>
+          <input type="password" id="confirm-password" name="confirm-password"
+                 placeholder="••••••••" autocomplete="new-password" required />
+        </div>
+
+        <button type="submit" class="btn" id="submit-btn">Create account</button>
+      </form>
+
+      <hr class="divider" />
+
+      <p class="auth-footer">
+        Already have an account? <a href="/auth/login.html">Log in</a>
+      </p>
+
+    </div>
+  </main>
+
+  <script src="/auth/signup.js"></script>
+</body>
+</html>
