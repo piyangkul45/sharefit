@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>List an Item — ShareFIT</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #0a0a0a;
+      --white:   #f5f5f5;
+      --muted:   #737373;
+      --surface: #141414;
+      --border:  #2e2e2e;
+      --card-bg: #111111;
+      --error:   #ef4444;
+      --success: #22c55e;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--black); color: var(--white);
+      min-height: 100vh; display: flex; flex-direction: column;
+    }
+
+    /* ── Nav ── */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.25rem 5%; border-bottom: 1px solid var(--border);
+    }
+    .logo { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px; color: var(--white); text-decoration: none; }
+    .nav-right { display: flex; align-items: center; gap: 1.5rem; }
+    .nav-link { color: var(--muted); text-decoration: none; font-size: 0.88rem; transition: color 0.2s; }
+    .nav-link:hover { color: var(--white); }
+    .btn-logout {
+      background: none; border: 1px solid var(--border); color: var(--muted);
+      padding: 0.45rem 1.1rem; border-radius: 999px; font-size: 0.85rem;
+      font-family: inherit; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-logout:hover { border-color: #555; color: var(--white); }
+
+    /* ── Loader ── */
+    #loading {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      color: var(--muted); font-size: 0.95rem; letter-spacing: 0.04em;
+    }
+
+    /* ── Page content ── */
+    #content { display: none; flex: 1; padding: 3.5rem 5%; }
+
+    .page-header { margin-bottom: 2.5rem; }
+    .page-header .label {
+      font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem;
+    }
+    .page-header h1 { font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 900; letter-spacing: -1px; }
+
+    /* ── Form card ── */
+    .form-card {
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 1rem; padding: 2rem; max-width: 640px;
+    }
+
+    .form-row { margin-bottom: 1.4rem; }
+    .form-row label {
+      display: block; font-size: 0.82rem; font-weight: 600;
+      color: var(--muted); margin-bottom: 0.4rem; letter-spacing: 0.02em;
+    }
+    .form-row label span { color: var(--error); margin-left: 2px; }
+
+    input[type="text"],
+    input[type="number"],
+    select {
+      width: 100%; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 0.5rem; color: var(--white); font-family: inherit;
+      font-size: 0.92rem; padding: 0.65rem 0.9rem; outline: none;
+      transition: border-color 0.2s;
+      appearance: none; -webkit-appearance: none;
+    }
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    select:focus { border-color: #555; }
+
+    select option { background: #1a1a1a; }
+
+    /* ── Price row ── */
+    .price-wrapper { position: relative; }
+    .price-prefix {
+      position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%);
+      color: var(--muted); font-size: 0.92rem; pointer-events: none;
+    }
+    .price-wrapper input { padding-left: 1.9rem; }
+
+    /* ── Two-column grid ── */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 480px) { .form-grid { grid-template-columns: 1fr; } }
+
+    /* ── Image upload ── */
+    .upload-zone {
+      border: 2px dashed var(--border); border-radius: 0.5rem;
+      padding: 2rem 1rem; text-align: center; cursor: pointer;
+      transition: border-color 0.2s; position: relative;
+    }
+    .upload-zone:hover, .upload-zone.drag-over { border-color: #555; }
+    .upload-zone input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer;
+      width: 100%; height: 100%;
+    }
+    .upload-zone .upload-label { color: var(--muted); font-size: 0.88rem; pointer-events: none; }
+    .upload-zone .upload-label strong { color: var(--white); }
+
+    #preview-wrap { margin-top: 0.75rem; display: none; }
+    #preview-wrap img {
+      max-height: 200px; max-width: 100%; border-radius: 0.5rem;
+      border: 1px solid var(--border); object-fit: cover;
+    }
+    #remove-img {
+      display: inline-block; margin-top: 0.4rem; font-size: 0.8rem;
+      color: var(--muted); cursor: pointer; background: none; border: none;
+      font-family: inherit; padding: 0;
+    }
+    #remove-img:hover { color: var(--error); }
+
+    /* ── Alert ── */
+    #alert {
+      display: none; padding: 0.75rem 1rem; border-radius: 0.5rem;
+      font-size: 0.88rem; margin-bottom: 1.25rem;
+    }
+    #alert.error   { background: #1e0a0a; border: 1px solid #7f1d1d; color: #fca5a5; }
+    #alert.success { background: #071a0e; border: 1px solid #14532d; color: #86efac; }
+
+    /* ── Submit ── */
+    .btn-submit {
+      width: 100%; background: var(--white); color: var(--black);
+      border: none; border-radius: 0.6rem; padding: 0.85rem 1.5rem;
+      font-size: 0.95rem; font-weight: 700; font-family: inherit;
+      cursor: pointer; transition: background 0.2s; margin-top: 0.5rem;
+    }
+    .btn-submit:hover:not(:disabled) { background: #d4d4d4; }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="/" class="logo">ShareFIT</a>
+    <div class="nav-right">
+      <a href="/dashboard.html" class="nav-link">Dashboard</a>
+      <button class="btn-logout" id="logout-btn">Log out</button>
+    </div>
+  </nav>
+
+  <div id="loading">Authenticating…</div>
+
+  <div id="content">
+    <div class="page-header">
+      <div class="label">New listing</div>
+      <h1>List an item</h1>
+    </div>
+
+    <div class="form-card">
+      <div id="alert" role="alert"></div>
+
+      <form id="list-form" novalidate>
+
+        <div class="form-row">
+          <label for="item_name">Item name <span>*</span></label>
+          <input type="text" id="item_name" name="item_name" maxlength="120"
+                 placeholder="e.g. Oversized linen blazer" autocomplete="off" />
+        </div>
+
+        <div class="form-row">
+          <label for="brand">Brand</label>
+          <input type="text" id="brand" name="brand" maxlength="80"
+                 placeholder="e.g. Zara, COS, vintage…" autocomplete="off" />
+        </div>
+
+        <div class="form-grid">
+          <div class="form-row">
+            <label for="category">Category <span>*</span></label>
+            <select id="category" name="category">
+              <option value="">Select…</option>
+              <option value="tops">Tops</option>
+              <option value="bottoms">Bottoms</option>
+              <option value="dresses">Dresses</option>
+              <option value="outerwear">Outerwear</option>
+              <option value="activewear">Activewear</option>
+              <option value="accessories">Accessories</option>
+              <option value="footwear">Footwear</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label for="size">Size <span>*</span></label>
+            <select id="size" name="size">
+              <option value="">Select…</option>
+              <option value="XS">XS</option>
+              <option value="S">S</option>
+              <option value="M">M</option>
+              <option value="L">L</option>
+              <option value="XL">XL</option>
+              <option value="XXL">XXL</option>
+              <option value="ONE">One size</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-row">
+            <label for="style">Style <span>*</span></label>
+            <select id="style" name="style">
+              <option value="">Select…</option>
+              <option value="casual">Casual</option>
+              <option value="formal">Formal</option>
+              <option value="streetwear">Streetwear</option>
+              <option value="bohemian">Bohemian</option>
+              <option value="vintage">Vintage</option>
+              <option value="sporty">Sporty</option>
+              <option value="minimalist">Minimalist</option>
+              <option value="party">Party</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label for="price_per_day">Price per day <span>*</span></label>
+            <div class="price-wrapper">
+              <span class="price-prefix">฿</span>
+              <input type="number" id="price_per_day" name="price_per_day"
+                     min="1" step="1" placeholder="150" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>Photo</label>
+          <div class="upload-zone" id="upload-zone">
+            <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/webp" />
+            <div class="upload-label">
+              <strong>Choose a photo</strong> or drag &amp; drop<br>
+              <span>JPEG, PNG or WebP · max 5 MB</span>
+            </div>
+          </div>
+          <div id="preview-wrap">
+            <img id="preview-img" src="" alt="Preview" />
+            <br>
+            <button type="button" id="remove-img">Remove photo</button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submit-btn">List item</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="/list-item.js"></script>
+</body>
+</html>

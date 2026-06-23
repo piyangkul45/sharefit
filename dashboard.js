@@ -19,14 +19,17 @@ async function fetchWithRefresh(url, options = {}) {
 }
 
 async function init() {
-  const res = await fetchWithRefresh('/api/auth/me').catch(() => null);
+  const [meRes, itemsRes] = await Promise.all([
+    fetchWithRefresh('/api/auth/me').catch(() => null),
+    fetchWithRefresh('/api/items/mine').catch(() => null),
+  ]);
 
-  if (!res || !res.ok) {
+  if (!meRes || !meRes.ok) {
     window.location.replace('/auth/login.html');
     return;
   }
 
-  const { user } = await res.json();
+  const { user } = await meRes.json();
 
   document.getElementById('username-display').textContent = user.username;
   document.getElementById('info-username').textContent    = user.username;
@@ -38,6 +41,13 @@ async function init() {
       })
     : '—';
   document.getElementById('info-created').textContent = joined;
+
+  if (itemsRes?.ok) {
+    const { items } = await itemsRes.json();
+    document.getElementById('stat-items').textContent = items.length;
+  } else {
+    document.getElementById('stat-items').textContent = '0';
+  }
 
   loading.style.display  = 'none';
   content.style.display  = 'block';

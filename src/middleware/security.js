@@ -4,13 +4,16 @@ const cors      = require('cors');
 const rateLimit = require('express-rate-limit');
 
 function applySecurityMiddleware(app) {
+  // Allow images and API calls from the Supabase project domain
+  const supabaseOrigin = process.env.SUPABASE_URL || '';
+
   app.use(helmet({
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc:  ["'self'"],          // no inline scripts — JS lives in .js files
         styleSrc:   ["'self'", "'unsafe-inline'"],
-        imgSrc:     ["'self'", "data:"],
+        imgSrc:     ["'self'", "data:", ...(supabaseOrigin ? [supabaseOrigin] : [])],
         connectSrc: ["'self'"],
         frameAncestors: ["'none'"],      // blocks clickjacking
       },

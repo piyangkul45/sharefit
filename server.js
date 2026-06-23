@@ -15,6 +15,7 @@ const path         = require('path');
 const cookieParser = require('cookie-parser');
 const { applySecurityMiddleware } = require('./src/middleware/security');
 const authRoutes   = require('./src/routes/authRoutes');
+const itemRoutes   = require('./src/routes/itemRoutes');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -30,12 +31,18 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname)));
 
 // 4. Auth API
-app.use('/api/auth', authRoutes);
+app.use('/api/auth',  authRoutes);
 
-// 5. Global error handler — never expose stack traces to the client
+// 5. Items API
+app.use('/api/items', itemRoutes);
+
+// 6. Global error handler — never expose stack traces to the client
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
-  console.error('[error]', err.message);
+  console.error('[error]', err.message, err.cause?.message || '');
+  if (err.cause?.code === 'ENOTFOUND' || err.message === 'fetch failed') {
+    return res.status(503).json({ error: 'Cannot reach authentication service. Please try again later.' });
+  }
   res.status(500).json({ error: 'An unexpected error occurred.' });
 });
 
