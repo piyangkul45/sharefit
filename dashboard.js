@@ -36,7 +36,7 @@ async function init() {
   document.getElementById('info-email').textContent       = user.email;
 
   const joined = user.created_at
-    ? new Date(user.created_at * 1000).toLocaleDateString('en-GB', {
+    ? new Date(user.created_at).toLocaleDateString('en-GB', {
         year: 'numeric', month: 'long', day: 'numeric',
       })
     : '—';

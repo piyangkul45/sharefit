@@ -1,7 +1,6 @@
 -- ShareFIT — Supabase Setup SQL
--- Run this in your Supabase project SQL Editor (Dashboard → SQL Editor → New query)
--- If you ran a previous version, drop the old table first:
---   DROP TABLE IF EXISTS public.items CASCADE;
+-- Run this in: Supabase Dashboard → SQL Editor → New query → Run
+-- Safe to run multiple times (all statements are idempotent).
 
 -- ── 1. Items table ────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.items (
@@ -20,6 +19,11 @@ CREATE TABLE IF NOT EXISTS public.items (
 
 -- ── 2. Row-Level Security for items ──────────────────────────────────────────
 ALTER TABLE public.items ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "items_select_all"  ON public.items;
+DROP POLICY IF EXISTS "items_insert_own"  ON public.items;
+DROP POLICY IF EXISTS "items_update_own"  ON public.items;
+DROP POLICY IF EXISTS "items_delete_own"  ON public.items;
 
 -- Anyone can browse listings
 CREATE POLICY "items_select_all" ON public.items
@@ -43,6 +47,10 @@ VALUES ('item-images', 'item-images', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- ── 4. Storage RLS ────────────────────────────────────────────────────────────
+DROP POLICY IF EXISTS "item_images_public_select" ON storage.objects;
+DROP POLICY IF EXISTS "item_images_auth_insert"   ON storage.objects;
+DROP POLICY IF EXISTS "item_images_owner_delete"  ON storage.objects;
+
 -- Anyone can view images
 CREATE POLICY "item_images_public_select" ON storage.objects
   FOR SELECT USING (bucket_id = 'item-images');

@@ -3,6 +3,7 @@ const { createClient } = require('@supabase/supabase-js');
 
 const ALLOWED_CATEGORIES  = ['tops','bottoms','dresses','outerwear','activewear','accessories','footwear','other'];
 const ALLOWED_STYLES      = ['casual','formal','streetwear','bohemian','vintage','sporty','minimalist','party'];
+const ALLOWED_SIZES       = ['XS','S','M','L','XL','XXL','ONE'];
 const ALLOWED_IMAGE_TYPES = ['image/jpeg','image/png','image/webp'];
 
 function getUserClient(accessToken) {
@@ -31,6 +32,10 @@ async function createItem(req, res, next) {
 
     if (missing.length) {
       return res.status(400).json({ error: `Missing required fields: ${missing.join(', ')}.` });
+    }
+
+    if (!ALLOWED_SIZES.includes(size)) {
+      return res.status(400).json({ error: 'Invalid size.' });
     }
 
     if (!ALLOWED_CATEGORIES.includes(category)) {
