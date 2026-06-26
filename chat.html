@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Messages — ShareFIT</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #0a0a0a;
+      --white:   #f5f5f5;
+      --muted:   #737373;
+      --surface: #141414;
+      --border:  #2e2e2e;
+      --card-bg: #111111;
+      --bubble-me:   rgba(255,255,255,0.09);
+      --bubble-them: #161616;
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--black); color: var(--white);
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 5%; border-bottom: 1px solid var(--border);
+      background: rgba(10,10,10,0.95); backdrop-filter: blur(8px);
+      z-index: 10;
+    }
+    .logo { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; color: var(--white); text-decoration: none; }
+    .nav-right { display: flex; align-items: center; gap: 1.5rem; }
+    .nav-link { color: var(--muted); font-size: 0.88rem; text-decoration: none; transition: color 0.2s; }
+    .nav-link:hover { color: var(--white); }
+
+    /* ── LAYOUT ── */
+    .chat-layout {
+      flex: 1; display: grid;
+      grid-template-columns: 280px 1fr;
+      overflow: hidden; min-height: 0;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      display: flex; flex-direction: column;
+      border-right: 1px solid var(--border); overflow: hidden;
+    }
+    .sidebar-header {
+      padding: 1.1rem 1.25rem; border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .sidebar-header h2 { font-size: 0.95rem; font-weight: 700; }
+
+    .conv-list { flex: 1; overflow-y: auto; }
+
+    .conv-item {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.85rem 1.25rem; cursor: pointer;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      transition: background 0.15s;
+    }
+    .conv-item:hover   { background: rgba(255,255,255,0.04); }
+    .conv-item.active  { background: rgba(255,255,255,0.07); }
+
+    .conv-avatar {
+      width: 2.4rem; height: 2.4rem; border-radius: 50%;
+      background: var(--surface); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; font-weight: 700; color: var(--muted);
+      flex-shrink: 0; text-transform: uppercase;
+    }
+    .conv-info { min-width: 0; }
+    .conv-name {
+      font-size: 0.88rem; font-weight: 600; color: var(--white);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .conv-preview {
+      font-size: 0.78rem; color: var(--muted); margin-top: 0.1rem;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    .conv-empty {
+      padding: 2.5rem 1.25rem; text-align: center; color: var(--muted); font-size: 0.85rem;
+    }
+
+    /* ── CHAT PANEL ── */
+    .chat-panel {
+      display: flex; flex-direction: column; overflow: hidden; min-height: 0;
+    }
+
+    /* placeholder when no conversation is open */
+    .chat-placeholder {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 0.75rem;
+      color: var(--muted);
+    }
+    .chat-placeholder .ph-icon { font-size: 2.5rem; }
+    .chat-placeholder p { font-size: 0.9rem; }
+
+    /* active conversation */
+    .chat-inner { display: none; flex-direction: column; flex: 1; overflow: hidden; min-height: 0; }
+    .chat-inner.visible { display: flex; }
+
+    /* ── CHAT HEADER ── */
+    .chat-header {
+      flex-shrink: 0;
+      padding: 0.9rem 1.5rem; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .back-btn {
+      display: none; background: none; border: none;
+      color: var(--muted); cursor: pointer; font-size: 1.1rem;
+      padding: 0 0.5rem 0 0; transition: color 0.2s;
+    }
+    .back-btn:hover { color: var(--white); }
+    .chat-header-avatar {
+      width: 2rem; height: 2rem; border-radius: 50%;
+      background: var(--surface); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 700; color: var(--muted);
+      flex-shrink: 0; text-transform: uppercase;
+    }
+    .chat-header-info { min-width: 0; }
+    .chat-partner-name { font-size: 0.95rem; font-weight: 700; }
+    .chat-item-context {
+      font-size: 0.75rem; color: var(--muted); margin-top: 0.1rem;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    /* ── MESSAGES AREA ── */
+    .messages-area {
+      flex: 1; overflow-y: auto; padding: 1.25rem 1.5rem;
+      display: flex; flex-direction: column; gap: 0.5rem; min-height: 0;
+    }
+
+    .msg-row { display: flex; flex-direction: column; max-width: 72%; }
+    .msg-row.me   { align-self: flex-end;  align-items: flex-end; }
+    .msg-row.them { align-self: flex-start; align-items: flex-start; }
+
+    .bubble {
+      padding: 0.6rem 0.9rem; border-radius: 1rem;
+      font-size: 0.9rem; line-height: 1.5; word-break: break-word;
+      white-space: pre-wrap;
+    }
+    .msg-row.me   .bubble {
+      background: var(--bubble-me);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-bottom-right-radius: 0.25rem;
+    }
+    .msg-row.them .bubble {
+      background: var(--bubble-them);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 0.25rem;
+    }
+
+    .msg-time {
+      font-size: 0.68rem; color: var(--muted);
+      margin-top: 0.2rem; padding: 0 0.2rem;
+    }
+
+    /* date separator */
+    .date-sep {
+      align-self: center; font-size: 0.72rem; color: var(--muted);
+      background: var(--surface); border: 1px solid var(--border);
+      padding: 0.2rem 0.75rem; border-radius: 999px;
+      margin: 0.5rem 0;
+    }
+
+    /* empty thread */
+    .thread-empty {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      color: var(--muted); text-align: center; gap: 0.5rem; font-size: 0.88rem;
+    }
+    .thread-empty .te-icon { font-size: 2rem; }
+
+    /* loading */
+    .thread-loading {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      color: var(--muted); font-size: 0.88rem; gap: 0.5rem;
+    }
+    .mini-spinner {
+      width: 1rem; height: 1rem;
+      border: 2px solid var(--border); border-top-color: #aaa;
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── INPUT BAR ── */
+    .input-bar {
+      flex-shrink: 0;
+      display: flex; align-items: flex-end; gap: 0.75rem;
+      padding: 0.9rem 1.5rem; border-top: 1px solid var(--border);
+    }
+    #msg-input {
+      flex: 1; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 1.5rem; color: var(--white); font-family: inherit;
+      font-size: 0.9rem; padding: 0.6rem 1rem; outline: none; resize: none;
+      transition: border-color 0.2s; max-height: 120px; overflow-y: auto;
+      line-height: 1.5;
+    }
+    #msg-input::placeholder { color: var(--muted); }
+    #msg-input:focus { border-color: #555; }
+
+    #send-btn {
+      flex-shrink: 0; width: 2.4rem; height: 2.4rem;
+      background: var(--white); color: var(--black);
+      border: none; border-radius: 50%; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s; font-size: 1rem;
+    }
+    #send-btn:hover:not(:disabled) { background: #d4d4d4; }
+    #send-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    /* send error */
+    #send-error {
+      display: none; font-size: 0.78rem; color: #fca5a5;
+      padding: 0 1.5rem 0.5rem;
+    }
+
+    /* loading overlay for whole page */
+    #page-loading {
+      position: fixed; inset: 0; background: var(--black);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem; color: var(--muted); z-index: 999;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 680px) {
+      .chat-layout { grid-template-columns: 1fr; }
+      .sidebar     { border-right: none; }
+      .chat-inner.visible { position: fixed; inset: 0; top: 57px; z-index: 20; background: var(--black); }
+      .back-btn    { display: block; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="page-loading">
+    <div class="mini-spinner" style="width:1.5rem;height:1.5rem"></div>
+    &nbsp;Loading…
+  </div>
+
+  <!-- NAV -->
+  <nav>
+    <a href="/" class="logo">ShareFIT</a>
+    <div class="nav-right">
+      <a href="/marketplace.html" class="nav-link">Browse</a>
+      <a href="/dashboard.html"   class="nav-link" id="nav-dashboard">Dashboard</a>
+    </div>
+  </nav>
+
+  <!-- CHAT LAYOUT -->
+  <div class="chat-layout" id="chat-layout">
+
+    <!-- SIDEBAR: conversation list -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2>Messages</h2>
+      </div>
+      <div class="conv-list" id="conv-list">
+        <div class="conv-empty">No conversations yet.</div>
+      </div>
+    </aside>
+
+    <!-- MAIN: chat panel -->
+    <div class="chat-panel">
+
+      <!-- Placeholder when no conversation selected -->
+      <div class="chat-placeholder" id="chat-placeholder">
+        <div class="ph-icon">💬</div>
+        <p>Select a conversation or contact an item owner.</p>
+      </div>
+
+      <!-- Active conversation -->
+      <div class="chat-inner" id="chat-inner">
+
+        <div class="chat-header">
+          <button class="back-btn" id="back-btn" aria-label="Back to conversations">←</button>
+          <div class="chat-header-avatar" id="header-avatar"></div>
+          <div class="chat-header-info">
+            <div class="chat-partner-name" id="header-partner-name">—</div>
+            <div class="chat-item-context" id="header-item-context"></div>
+          </div>
+        </div>
+
+        <div class="messages-area" id="messages-area">
+          <div class="thread-loading" id="thread-loading">
+            <div class="mini-spinner"></div> Loading messages…
+          </div>
+        </div>
+
+        <div id="send-error"></div>
+
+        <div class="input-bar">
+          <textarea id="msg-input" rows="1" placeholder="Type a message…" aria-label="Message"></textarea>
+          <button id="send-btn" aria-label="Send" disabled>➤</button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/chat.js"></script>
+</body>
+</html>

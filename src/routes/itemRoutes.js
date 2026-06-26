@@ -2,8 +2,8 @@
 const express = require('express');
 const multer  = require('multer');
 const router  = express.Router();
-const { requireAuth }            = require('../middleware/auth');
-const { createItem, getMyItems } = require('../controllers/itemController');
+const { requireAuth }                       = require('../middleware/auth');
+const { createItem, getMyItems, getAllItems } = require('../controllers/itemController');
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -24,6 +24,7 @@ function handleUpload(req, res, next) {
   });
 }
 
+router.get('/',      getAllItems);
 router.post('/',     requireAuth, handleUpload, createItem);
 router.get('/mine',  requireAuth, getMyItems);
 

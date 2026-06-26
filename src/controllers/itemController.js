@@ -1,5 +1,6 @@
 'use strict';
 const { createClient } = require('@supabase/supabase-js');
+const anonClient       = require('../config/db');
 
 const ALLOWED_CATEGORIES  = ['tops','bottoms','dresses','outerwear','activewear','accessories','footwear','other'];
 const ALLOWED_STYLES      = ['casual','formal','streetwear','bohemian','vintage','sporty','minimalist','party'];
@@ -121,4 +122,38 @@ async function getMyItems(req, res, next) {
   }
 }
 
-module.exports = { createItem, getMyItems };
+// ── GET /api/items (public) ───────────────────────────────────────────────────
+
+const ALLOWED_SORT_FIELDS = new Set(['created_at', 'price_per_day']);
+
+async function getAllItems(req, res, next) {
+  try {
+    let query = anonClient
+      .from('items')
+      .select('id, user_id, item_name, brand, size, category, style, price_per_day, image_url, created_at')
+      .eq('is_available', true);
+
+    if (req.query.category && ALLOWED_CATEGORIES.includes(req.query.category)) {
+      query = query.eq('category', req.query.category);
+    }
+    if (req.query.size && ALLOWED_SIZES.includes(req.query.size)) {
+      query = query.eq('size', req.query.size);
+    }
+    if (req.query.style && ALLOWED_STYLES.includes(req.query.style)) {
+      query = query.eq('style', req.query.style);
+    }
+
+    const sortField = ALLOWED_SORT_FIELDS.has(req.query.sort) ? req.query.sort : 'created_at';
+    const ascending = req.query.order === 'asc';
+    query = query.order(sortField, { ascending });
+
+    const { data, error } = await query;
+    if (error) return next(error);
+
+    return res.json({ items: data || [] });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { createItem, getMyItems, getAllItems };

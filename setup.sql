@@ -68,3 +68,123 @@ CREATE POLICY "item_images_owner_delete" ON storage.objects
     bucket_id = 'item-images' AND
     auth.uid()::text = (storage.foldername(name))[1]
   );
+
+-- ── 5. Bookings table ─────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.bookings (
+  id           UUID          DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id      UUID          NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  item_id      UUID          NOT NULL REFERENCES public.items(id) ON DELETE CASCADE,
+  start_date   DATE          NOT NULL,
+  end_date     DATE          NOT NULL,
+  total_price  NUMERIC(10,2) NOT NULL CHECK (total_price > 0),
+  status       TEXT          NOT NULL DEFAULT 'pending'
+                              CHECK (status IN ('pending','confirmed','cancelled','completed')),
+  created_at   TIMESTAMPTZ   DEFAULT NOW(),
+  CONSTRAINT   booking_dates_valid CHECK (end_date > start_date)
+);
+
+-- ── 6. Row-Level Security for bookings ───────────────────────────────────────
+ALTER TABLE public.bookings ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "bookings_select_own"  ON public.bookings;
+DROP POLICY IF EXISTS "bookings_insert_own"  ON public.bookings;
+DROP POLICY IF EXISTS "bookings_update_own"  ON public.bookings;
+
+-- Renters see only their own bookings
+CREATE POLICY "bookings_select_own" ON public.bookings
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- Only the renter can create their own booking row
+CREATE POLICY "bookings_insert_own" ON public.bookings
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Users can cancel their own pending bookings
+CREATE POLICY "bookings_update_own" ON public.bookings
+  FOR UPDATE USING (auth.uid() = user_id);
+
+-- ── 8. Messages table ────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.messages (
+  id           UUID         DEFAULT gen_random_uuid() PRIMARY KEY,
+  sender_id    UUID         NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  receiver_id  UUID         NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  message_text TEXT         NOT NULL CHECK (char_length(message_text) BETWEEN 1 AND 1000),
+  created_at   TIMESTAMPTZ  DEFAULT NOW(),
+  CONSTRAINT   no_self_msg  CHECK (sender_id <> receiver_id)
+);
+
+ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "messages_select_participant" ON public.messages;
+DROP POLICY IF EXISTS "messages_insert_own"         ON public.messages;
+
+CREATE POLICY "messages_select_participant" ON public.messages
+  FOR SELECT USING (auth.uid() = sender_id OR auth.uid() = receiver_id);
+
+CREATE POLICY "messages_insert_own" ON public.messages
+  FOR INSERT WITH CHECK (auth.uid() = sender_id);
+
+-- ── 9. Public profiles (username lookup) ─────────────────────────────────────
+-- Needed because auth.users is not queryable via user-scoped JWTs.
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id         UUID  PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  username   TEXT  NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "profiles_public_read"  ON public.profiles;
+DROP POLICY IF EXISTS "profiles_owner_update" ON public.profiles;
+
+CREATE POLICY "profiles_public_read" ON public.profiles
+  FOR SELECT USING (true);
+
+CREATE POLICY "profiles_owner_update" ON public.profiles
+  FOR UPDATE USING (auth.uid() = id);
+
+-- Trigger: auto-create profile row when a user signs up
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
+AS $$
+BEGIN
+  INSERT INTO public.profiles (id, username)
+  VALUES (
+    NEW.id,
+    COALESCE(NEW.raw_user_meta_data->>'username', 'user_' || LEFT(NEW.id::text, 8))
+  )
+  ON CONFLICT (id) DO NOTHING;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- Backfill profiles for users who signed up before this script ran
+INSERT INTO public.profiles (id, username)
+SELECT id, COALESCE(raw_user_meta_data->>'username', 'user_' || LEFT(id::text, 8))
+FROM   auth.users
+ON CONFLICT (id) DO NOTHING;
+
+-- ── 7. Availability-check function (SECURITY DEFINER) ─────────────────────────
+-- Runs as the function owner (postgres), bypassing RLS so the server can
+-- detect overlapping bookings without exposing other users' data.
+CREATE OR REPLACE FUNCTION public.check_booking_overlap(
+  p_item_id   UUID,
+  p_start_date DATE,
+  p_end_date   DATE
+) RETURNS BOOLEAN
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.bookings
+    WHERE  item_id    = p_item_id
+      AND  status     IN ('pending', 'confirmed')
+      AND  start_date <  p_end_date
+      AND  end_date   >  p_start_date
+  );
+$$;

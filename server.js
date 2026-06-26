@@ -14,8 +14,10 @@ const express      = require('express');
 const path         = require('path');
 const cookieParser = require('cookie-parser');
 const { applySecurityMiddleware } = require('./src/middleware/security');
-const authRoutes   = require('./src/routes/authRoutes');
-const itemRoutes   = require('./src/routes/itemRoutes');
+const authRoutes    = require('./src/routes/authRoutes');
+const itemRoutes    = require('./src/routes/itemRoutes');
+const bookingRoutes  = require('./src/routes/bookingRoutes');
+const messageRoutes  = require('./src/routes/messageRoutes');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -34,9 +36,15 @@ app.use(express.static(path.join(__dirname)));
 app.use('/api/auth',  authRoutes);
 
 // 5. Items API
-app.use('/api/items', itemRoutes);
+app.use('/api/items',    itemRoutes);
 
-// 6. Global error handler — never expose stack traces to the client
+// 6. Bookings API
+app.use('/api/bookings',  bookingRoutes);
+
+// 7. Messages API
+app.use('/api/messages',  messageRoutes);
+
+// 8. Global error handler — never expose stack traces to the client
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   console.error('[error]', err.message, err.cause?.message || '');
