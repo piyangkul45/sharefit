@@ -16,7 +16,7 @@ const cookieParser = require('cookie-parser');
 const { applySecurityMiddleware } = require('./src/middleware/security');
 const authRoutes    = require('./src/routes/authRoutes');
 const itemRoutes    = require('./src/routes/itemRoutes');
-const bookingRoutes  = require('./src/routes/bookingRoutes');
+const rentalRoutes   = require('./src/routes/rentalRoutes');
 const messageRoutes  = require('./src/routes/messageRoutes');
 
 const app  = express();
@@ -38,8 +38,8 @@ app.use('/api/auth',  authRoutes);
 // 5. Items API
 app.use('/api/items',    itemRoutes);
 
-// 6. Bookings API
-app.use('/api/bookings',  bookingRoutes);
+// 6. Rentals API
+app.use('/api/rentals',   rentalRoutes);
 
 // 7. Messages API
 app.use('/api/messages',  messageRoutes);

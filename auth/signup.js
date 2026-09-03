@@ -7,6 +7,7 @@ const pwInput     = document.getElementById('password');
 const pwToggle    = document.getElementById('pw-toggle');
 const strengthBars  = document.getElementById('strength-bars');
 const strengthLabel = document.getElementById('strength-label');
+const agreeTerms    = document.getElementById('agree-terms');
 
 // Redirect if already logged in
 (async () => {
@@ -44,6 +45,13 @@ pwInput.addEventListener('input', () => {
   strengthLabel.textContent = STRENGTH_LABELS[score] || '';
 });
 
+// ── Terms consent gates the submit button ─────────────────────────
+function syncSubmitState() {
+  submitBtn.disabled = !agreeTerms.checked;
+}
+agreeTerms.addEventListener('change', syncSubmitState);
+syncSubmitState(); // reflect browser-restored checkbox state on reload
+
 // ── Error helpers ─────────────────────────────────────────────────
 function showErrors(msgs) {
   if (Array.isArray(msgs) && msgs.length > 1) {
@@ -69,6 +77,11 @@ form.addEventListener('submit', async (e) => {
   const password  = pwInput.value;
   const confirm   = document.getElementById('confirm-password').value;
 
+  if (!agreeTerms.checked) {
+    showErrors('กรุณายอมรับข้อตกลงการใช้งานและนโยบายความเป็นส่วนตัว');
+    return;
+  }
+
   // Client-side sanity checks (server validates too)
   const localErrors = [];
   if (!username) localErrors.push('Username is required.');
@@ -87,7 +100,7 @@ form.addEventListener('submit', async (e) => {
       method:      'POST',
       headers:     { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body:        JSON.stringify({ username, email, password }),
+      body:        JSON.stringify({ username, email, password, terms_accepted: true }),
     });
 
     const data = await res.json();
@@ -102,7 +115,7 @@ form.addEventListener('submit', async (e) => {
   } catch {
     showErrors('Network error. Check your connection and try again.');
   } finally {
-    submitBtn.disabled    = false;
     submitBtn.textContent = 'Create account';
+    syncSubmitState();
   }
 });

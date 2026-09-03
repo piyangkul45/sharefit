@@ -176,6 +176,15 @@
                  placeholder="e.g. Zara, COS, vintage…" autocomplete="off" />
         </div>
 
+        <div class="form-row">
+          <label for="listing_type">Listing type <span>*</span></label>
+          <select id="listing_type" name="listing_type">
+            <option value="rent">For Rent</option>
+            <option value="sale">For Sale</option>
+            <option value="both">Both</option>
+          </select>
+        </div>
+
         <div class="form-grid">
           <div class="form-row">
             <label for="category">Category <span>*</span></label>
@@ -223,13 +232,22 @@
             </select>
           </div>
 
-          <div class="form-row">
+          <div class="form-row" id="rent-price-row">
             <label for="price_per_day">Price per day <span>*</span></label>
             <div class="price-wrapper">
               <span class="price-prefix">฿</span>
               <input type="number" id="price_per_day" name="price_per_day"
                      min="1" step="1" placeholder="150" />
             </div>
+          </div>
+        </div>
+
+        <div class="form-row" id="sale-price-row" hidden>
+          <label for="sell_price">Sale price <span>*</span></label>
+          <div class="price-wrapper">
+            <span class="price-prefix">฿</span>
+            <input type="number" id="sell_price" name="sell_price"
+                   min="1" step="1" placeholder="1200" />
           </div>
         </div>
 

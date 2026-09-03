@@ -112,6 +112,32 @@
     .btn:hover { background: #d4d4d4; }
     .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
+    /* ── Terms consent ── */
+    .consent-group { margin-top: 1.4rem; }
+    .consent { display: flex; align-items: flex-start; gap: 0.7rem; cursor: pointer; }
+    .consent input {
+      position: absolute; opacity: 0; width: 1px; height: 1px;
+    }
+    .consent-box {
+      flex-shrink: 0; width: 1.15rem; height: 1.15rem; margin-top: 0.08rem;
+      border: 1.5px solid #555; border-radius: 0.3rem; background: var(--card-bg);
+      position: relative; transition: background 0.15s, border-color 0.15s;
+    }
+    .consent input:checked + .consent-box { background: var(--white); border-color: var(--white); }
+    .consent input:checked + .consent-box::after {
+      content: ''; position: absolute; left: 0.35rem; top: 0.13rem;
+      width: 0.28rem; height: 0.56rem;
+      border: solid var(--black); border-width: 0 2px 2px 0; transform: rotate(45deg);
+    }
+    .consent input:focus-visible + .consent-box { outline: 2px solid #777; outline-offset: 2px; }
+    .consent-text { font-size: 0.85rem; line-height: 1.65; color: #bbb; }
+    .terms-link {
+      background: none; border: none; padding: 0; font: inherit; cursor: pointer;
+      color: var(--white); font-weight: 600;
+      text-decoration: underline; text-underline-offset: 2px;
+    }
+    .terms-link:hover { color: #d4d4d4; }
+
     .divider { border: none; border-top: 1px solid var(--border); margin: 1.75rem 0; }
     .auth-footer { text-align: center; font-size: 0.88rem; color: var(--muted); }
     .auth-footer a { color: var(--white); font-weight: 600; text-decoration: none; }
@@ -177,7 +203,19 @@
                  placeholder="••••••••" autocomplete="new-password" required />
         </div>
 
-        <button type="submit" class="btn" id="submit-btn">Create account</button>
+        <div class="form-group consent-group">
+          <label class="consent">
+            <input type="checkbox" id="agree-terms" />
+            <span class="consent-box" aria-hidden="true"></span>
+            <span class="consent-text">ฉันได้อ่านและยอมรับ
+              <button type="button" class="terms-link" data-open-terms="tos">ข้อตกลงการใช้งาน</button>
+              และ
+              <button type="button" class="terms-link" data-open-terms="privacy">นโยบายความเป็นส่วนตัว</button>
+            </span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn" id="submit-btn" disabled>Create account</button>
       </form>
 
       <hr class="divider" />
@@ -189,6 +227,7 @@
     </div>
   </main>
 
+  <script src="/terms-modal.js"></script>
   <script src="/auth/signup.js"></script>
 </body>
 </html>

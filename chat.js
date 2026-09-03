@@ -80,7 +80,8 @@ async function init() {
   const params  = new URLSearchParams(window.location.search);
   const withId  = params.get('with');
   const iname   = params.get('iname') || '';
-  if (withId) openConversation(withId, null, iname);
+  const draft   = params.get('draft') || '';
+  if (withId) openConversation(withId, null, iname, draft);
 }
 
 // ── Conversations list ────────────────────────────────────────────────────────
@@ -120,7 +121,7 @@ convList.addEventListener('click', (e) => {
 
 // ── Open a conversation ───────────────────────────────────────────────────────
 
-async function openConversation(partnerId, partnerName, itemName) {
+async function openConversation(partnerId, partnerName, itemName, draft = '') {
   if (currentPartnerId === partnerId) return;
 
   stopPolling();
@@ -175,6 +176,10 @@ async function openConversation(partnerId, partnerName, itemName) {
   }
 
   msgInput.disabled = false;
+  if (draft && !msgInput.value) {
+    msgInput.value = draft;
+    msgInput.dispatchEvent(new Event('input'));
+  }
   msgInput.focus();
   startPolling();
 }

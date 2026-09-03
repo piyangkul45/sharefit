@@ -53,6 +53,21 @@ imageInput.addEventListener('change', () => {
 
 removeImgBtn.addEventListener('click', clearPreview);
 
+// ── Listing type toggle ───────────────────────────────────────────────────────
+
+const listingType  = document.getElementById('listing_type');
+const rentPriceRow  = document.getElementById('rent-price-row');
+const salePriceRow  = document.getElementById('sale-price-row');
+
+function syncPriceFields() {
+  const type = listingType.value;
+  rentPriceRow.hidden = type === 'sale';
+  salePriceRow.hidden = type === 'rent';
+}
+
+listingType.addEventListener('change', syncPriceFields);
+syncPriceFields();
+
 uploadZone.addEventListener('dragover', (e) => {
   e.preventDefault();
   uploadZone.classList.add('drag-over');
@@ -87,19 +102,27 @@ form.addEventListener('submit', async (e) => {
   e.preventDefault();
   hideAlert();
 
-  const item_name = form.item_name.value.trim();
-  const category  = form.category.value;
-  const size      = form.size.value;
-  const style     = form.style.value;
-  const price     = form.price_per_day.value;
+  const item_name    = form.item_name.value.trim();
+  const category     = form.category.value;
+  const size         = form.size.value;
+  const style        = form.style.value;
+  const listing_type = form.listing_type.value;
+  const price        = form.price_per_day.value;
+  const sellPrice    = form.sell_price.value;
+
+  const wantsRent = listing_type === 'rent' || listing_type === 'both';
+  const wantsSale = listing_type === 'sale' || listing_type === 'both';
 
   if (!item_name) return showAlert('Please enter an item name.');
   if (!category)  return showAlert('Please select a category.');
   if (!size)      return showAlert('Please select a size.');
   if (!style)     return showAlert('Please select a style.');
-  if (!price || Number(price) <= 0) return showAlert('Please enter a valid price per day.');
+  if (wantsRent && (!price || Number(price) <= 0)) return showAlert('Please enter a valid price per day.');
+  if (wantsSale && (!sellPrice || Number(sellPrice) <= 0)) return showAlert('Please enter a valid sale price.');
 
   const body = new FormData(form);
+  if (!wantsRent) body.delete('price_per_day');
+  if (!wantsSale) body.delete('sell_price');
 
   submitBtn.disabled    = true;
   submitBtn.textContent = 'Listing…';

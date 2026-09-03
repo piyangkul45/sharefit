@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ข้อกำหนดและนโยบายความเป็นส่วนตัว — LoopWear</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #0a0a0a;
+      --white:   #f5f5f5;
+      --muted:   #737373;
+      --surface: #141414;
+      --border:  #2e2e2e;
+      --card-bg: #111111;
+      --success: #22c55e;
+      --error:   #ef4444;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--black); color: var(--white);
+      min-height: 100vh; display: flex; flex-direction: column;
+      line-height: 1.5;
+    }
+
+    /* ── Nav ── */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.25rem 5%; border-bottom: 1px solid var(--border);
+    }
+    .logo { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px; color: var(--white); text-decoration: none; }
+    .nav-link { color: var(--muted); text-decoration: none; font-size: 0.88rem; transition: color 0.2s; }
+    .nav-link:hover { color: var(--white); }
+
+    /* ── Layout ── */
+    main { flex: 1; display: flex; justify-content: center; padding: 3rem 1.5rem 4rem; }
+    .terms-card {
+      width: 100%; max-width: 720px;
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 1rem; padding: 2.25rem;
+    }
+
+    .terms-header { margin-bottom: 1.75rem; }
+    .terms-header .label {
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem;
+    }
+    .terms-header h1 { font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 900; letter-spacing: -0.5px; }
+    .terms-header .updated { margin-top: 0.5rem; font-size: 0.82rem; color: var(--muted); }
+
+    /* ── Accordion ── */
+    .accordion { margin-bottom: 1.75rem; }
+
+    .acc-item {
+      border: 1px solid var(--border); border-radius: 0.7rem;
+      background: var(--surface); overflow: hidden;
+    }
+    .acc-item + .acc-item { margin-top: 0.7rem; }
+
+    .acc-item summary {
+      list-style: none; cursor: pointer; user-select: none;
+      padding: 1rem 1.15rem;
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+    }
+    .acc-item summary::-webkit-details-marker { display: none; }
+    .acc-item summary:hover { background: rgba(255,255,255,0.03); }
+    .acc-item summary:focus-visible { outline: 2px solid #555; outline-offset: -2px; }
+
+    .acc-title { font-weight: 700; font-size: 0.98rem; }
+    .acc-en {
+      display: block; margin-top: 0.15rem;
+      font-size: 0.74rem; font-weight: 500; letter-spacing: 0.04em;
+      text-transform: uppercase; color: var(--muted);
+    }
+
+    .acc-chevron {
+      flex-shrink: 0; width: 0.62rem; height: 0.62rem; margin-top: 0.35rem;
+      border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted);
+      transform: rotate(-45deg); transition: transform 0.2s;
+    }
+    .acc-item[open] .acc-chevron { transform: rotate(45deg); }
+
+    .acc-body {
+      padding: 0.25rem 1.15rem 1.2rem;
+      color: #cfcfcf; font-size: 0.9rem; line-height: 1.75;
+    }
+    .acc-body p { margin-bottom: 0.7rem; }
+    .acc-body p:last-child { margin-bottom: 0; }
+    .acc-body strong { color: var(--white); font-weight: 600; }
+
+    /* ── Agreement ── */
+    .agree {
+      display: flex; align-items: flex-start; gap: 0.8rem;
+      padding: 1rem 1.1rem; border: 1px solid var(--border);
+      border-radius: 0.7rem; background: var(--surface);
+      cursor: pointer; transition: border-color 0.2s;
+    }
+    .agree:hover { border-color: #454545; }
+    .agree.checked { border-color: var(--success); }
+
+    .agree input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+
+    .agree-box {
+      flex-shrink: 0; width: 1.2rem; height: 1.2rem; margin-top: 0.1rem;
+      border: 1.5px solid #555; border-radius: 0.35rem;
+      background: var(--card-bg); position: relative; transition: all 0.15s;
+    }
+    .agree input:checked + .agree-box {
+      background: var(--success); border-color: var(--success);
+    }
+    .agree input:checked + .agree-box::after {
+      content: ''; position: absolute;
+      left: 0.38rem; top: 0.14rem; width: 0.3rem; height: 0.6rem;
+      border: solid #04140a; border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+    .agree input:focus-visible + .agree-box { outline: 2px solid var(--success); outline-offset: 2px; }
+
+    .agree-text { font-size: 0.9rem; line-height: 1.65; color: #dcdcdc; }
+
+    /* ── Actions ── */
+    .terms-actions {
+      display: flex; flex-direction: column; align-items: stretch;
+      gap: 0.85rem; margin-top: 1.5rem;
+    }
+    .btn-confirm {
+      width: 100%; background: var(--white); color: var(--black);
+      border: none; border-radius: 0.6rem; padding: 0.9rem 1.5rem;
+      font-size: 1rem; font-weight: 800; font-family: inherit;
+      cursor: pointer; transition: background 0.2s, opacity 0.2s;
+    }
+    .btn-confirm:hover:not(:disabled) { background: #d4d4d4; }
+    .btn-confirm:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .cancel-link {
+      text-align: center; font-size: 0.85rem; color: var(--muted);
+      text-decoration: none; transition: color 0.2s;
+    }
+    .cancel-link:hover { color: var(--white); }
+
+    /* ── Responsive ── */
+    @media (max-width: 560px) {
+      main { padding: 1.5rem 1rem 2.5rem; }
+      .terms-card { padding: 1.4rem; border-radius: 0.8rem; }
+      .acc-item summary { padding: 0.85rem 0.95rem; }
+      .acc-body { padding: 0.25rem 0.95rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="/" class="logo">LoopWear</a>
+    <a href="/" class="nav-link">หน้าแรก</a>
+  </nav>
+
+  <main>
+    <div class="terms-card">
+
+      <div class="terms-header">
+        <div class="label">LoopWear</div>
+        <h1>ข้อกำหนดและนโยบายความเป็นส่วนตัว</h1>
+        <div class="updated">ปรับปรุงล่าสุด: 3 กันยายน 2569</div>
+      </div>
+
+      <div class="accordion" id="accordion">
+
+        <details class="acc-item" open>
+          <summary>
+            <span class="acc-title">นโยบายความเป็นส่วนตัว<span class="acc-en">Privacy Policy</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <p>LoopWear เก็บรวบรวมข้อมูลส่วนบุคคลของท่านเท่าที่จำเป็นต่อการให้บริการแพลตฟอร์มเช่าและซื้อขายเสื้อผ้า ได้แก่ ชื่อ–นามสกุล ที่อยู่อีเมล หมายเลขโทรศัพท์ รูปถ่ายสินค้า ที่อยู่จัดส่ง ข้อมูลการชำระเงิน และประวัติการทำรายการ</p>
+            <p><strong>วัตถุประสงค์ในการใช้ข้อมูล:</strong> เพื่อยืนยันตัวตน ดำเนินการเช่าและซื้อขาย ประสานงานระหว่างผู้ใช้ ป้องกันการฉ้อโกง และปรับปรุงคุณภาพบริการ</p>
+            <p><strong>การเปิดเผยข้อมูล:</strong> เราเปิดเผยเฉพาะข้อมูลที่จำเป็น เช่น ชื่อผู้ใช้ ช่องทางติดต่อ และที่อยู่จัดส่ง ให้แก่คู่สัญญาอีกฝ่ายในรายการที่ท่านทำ รวมถึงผู้ให้บริการชำระเงินและขนส่งที่เกี่ยวข้องเท่านั้น</p>
+            <p><strong>ระยะเวลาจัดเก็บ:</strong> เราเก็บข้อมูลตราบเท่าที่บัญชีของท่านยังใช้งานอยู่ และไม่เกิน 1 ปีหลังปิดบัญชี เว้นแต่กฎหมายกำหนดเป็นอย่างอื่น</p>
+            <p><strong>สิทธิของเจ้าของข้อมูล:</strong> ท่านมีสิทธิเข้าถึง ขอสำเนา แก้ไข ลบ โอนย้าย คัดค้าน หรือระงับการใช้ข้อมูล และเพิกถอนความยินยอมได้ทุกเมื่อ โดยติดต่อ privacy@loopwear.co ทั้งนี้การเพิกถอนความยินยอมอาจทำให้ไม่สามารถใช้บริการบางส่วนได้</p>
+          </div>
+        </details>
+
+        <details class="acc-item">
+          <summary>
+            <span class="acc-title">ข้อตกลงการใช้งาน<span class="acc-en">Terms of Service</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <p>ผู้ใช้บริการต้องมีอายุ 18 ปีบริบูรณ์ขึ้นไป และรับผิดชอบต่อความถูกต้องของข้อมูลบัญชี รวมถึงการเก็บรักษารหัสผ่านของตนเอง</p>
+            <p>LoopWear เป็นเพียงตัวกลางเชื่อมโยงระหว่างผู้ให้เช่า/ผู้ขาย กับผู้เช่า/ผู้ซื้อ สัญญาเช่าหรือซื้อขายเกิดขึ้นโดยตรงระหว่างผู้ใช้ทั้งสองฝ่าย</p>
+            <p><strong>การเช่า:</strong> ผู้เช่าต้องส่งคืนสินค้าในสภาพเดิมภายในกำหนด หากล่าช้าหรือชำรุดเสียหาย ผู้เช่าต้องรับผิดชอบค่าปรับหรือค่าเสียหายตามที่ระบุไว้ในรายการ</p>
+            <p><strong>การซื้อขาย:</strong> กรรมสิทธิ์ในสินค้าจะโอนไปยังผู้ซื้อเมื่อมีการชำระเงินครบถ้วนและผู้ขายได้จัดส่งสินค้าแล้ว</p>
+            <p>ผู้ลงประกาศต้องเป็นเจ้าของสินค้าโดยชอบด้วยกฎหมาย ห้ามลงประกาศสินค้าผิดกฎหมาย สินค้าลอกเลียนแบบ หรือสินค้าที่ละเมิดทรัพย์สินทางปัญญา</p>
+            <p>LoopWear อาจเรียกเก็บค่าธรรมเนียมบริการจากรายการที่ทำสำเร็จ โดยจะแสดงจำนวนให้ทราบก่อนการยืนยันรายการทุกครั้ง</p>
+          </div>
+        </details>
+
+        <details class="acc-item">
+          <summary>
+            <span class="acc-title">กฎการระงับข้อพิพาท<span class="acc-en">Dispute Rules</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <p>หากเกิดปัญหาจากรายการเช่าหรือซื้อขาย ผู้ใช้ต้องแจ้งเรื่องผ่านระบบภายใน 3 วัน นับจากวันที่ได้รับสินค้าหรือวันครบกำหนดคืน</p>
+            <p>ผู้ใช้ควรเก็บหลักฐานประกอบ เช่น รูปถ่ายสินค้าก่อนและหลังใช้งาน ข้อความสนทนาภายในระบบ และหลักฐานการจัดส่ง</p>
+            <p>LoopWear จะทำหน้าที่ไกล่เกลี่ยโดยพิจารณาจากหลักฐานของทั้งสองฝ่าย และอาจกำหนดให้มีการคืนเงิน ชดใช้ค่าเสียหาย หรือหักค่าปรับตามความเหมาะสม</p>
+            <p>กรณีสินค้าสูญหายหรือเสียหายจนไม่สามารถซ่อมแซมได้ ผู้เช่าอาจต้องรับผิดชอบตามมูลค่าทดแทนของสินค้าที่ระบุไว้ในรายการ</p>
+            <p>คำตัดสินของทีมระงับข้อพิพาทถือเป็นที่สิ้นสุดภายในแพลตฟอร์ม โดยไม่ตัดสิทธิ์ผู้ใช้ในการดำเนินการตามกฎหมาย</p>
+          </div>
+        </details>
+
+        <details class="acc-item">
+          <summary>
+            <span class="acc-title">นโยบายต่อต้านการฉ้อโกง<span class="acc-en">Anti-Fraud Policy</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <p>ห้ามผู้ใช้ทำธุรกรรมนอกแพลตฟอร์มเพื่อหลีกเลี่ยงค่าธรรมเนียมหรือระบบคุ้มครองผู้ใช้</p>
+            <p>ห้ามสร้างบัญชีปลอม ใช้ตัวตนของผู้อื่น หรือให้ข้อมูลอันเป็นเท็จในการยืนยันตัวตน</p>
+            <p>ห้ามลงประกาศสินค้าที่ไม่มีอยู่จริง สินค้าไม่ตรงตามคำอธิบาย หรือใช้รูปภาพที่ทำให้เข้าใจผิด</p>
+            <p>LoopWear อาจขอเอกสารยืนยันตัวตน (KYC) ตรวจสอบรายการที่น่าสงสัย ระงับการจ่ายเงิน หรืออายัดบัญชีชั่วคราวเพื่อป้องกันความเสียหาย</p>
+            <p>การกระทำที่เข้าข่ายฉ้อโกงจะส่งผลให้ถูกระงับบัญชีถาวร และอาจถูกดำเนินคดีตามกฎหมาย ท่านสามารถแจ้งเบาะแสได้ที่ trust@loopwear.co โดยข้อมูลผู้แจ้งจะถูกเก็บเป็นความลับ</p>
+          </div>
+        </details>
+
+      </div>
+
+      <label class="agree" id="agree-label">
+        <input type="checkbox" id="agree-check" />
+        <span class="agree-box" aria-hidden="true"></span>
+        <span class="agree-text">ข้าพเจ้ายินยอมให้มีการเก็บรวบรวม ใช้ และเปิดเผยข้อมูลส่วนบุคคลของข้าพเจ้า ตามที่ระบุไว้ในนโยบายความเป็นส่วนตัว</span>
+      </label>
+
+      <div class="terms-actions">
+        <button type="button" class="btn-confirm" id="confirm-btn" disabled>ยืนยัน</button>
+        <a href="/" class="cancel-link">ยกเลิก</a>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="/terms.js"></script>
+</body>
+</html>

@@ -151,11 +151,12 @@
     .card-brand { font-size: 0.8rem; color: var(--muted); margin-bottom: auto; }
     .no-brand { color: #3d3d3d; }
     .card-footer {
-      display: flex; align-items: center; justify-content: space-between;
+      display: flex; flex-direction: column; align-items: flex-start; gap: 0.15rem;
       margin-top: 0.85rem; margin-bottom: 0.75rem;
     }
     .card-price { font-size: 1.05rem; font-weight: 800; color: var(--white); }
     .card-price span { font-size: 0.75rem; font-weight: 400; color: var(--muted); }
+    .card-price-sale { color: var(--success); }
     .card-actions { display: flex; flex-direction: column; gap: 0.45rem; margin-top: 0.75rem; }
 
     .btn-rent {
@@ -165,6 +166,19 @@
       cursor: pointer; transition: background 0.2s;
     }
     .btn-rent:hover { background: #d4d4d4; }
+
+    .btn-buy {
+      width: 100%; background: var(--success); color: #04140a;
+      border: none; border-radius: 0.5rem; padding: 0.62rem 1rem;
+      font-size: 0.88rem; font-weight: 700; font-family: inherit;
+      cursor: pointer; transition: opacity 0.2s;
+    }
+    .btn-buy:hover { opacity: 0.88; }
+
+    .card-flash {
+      border-color: var(--success);
+      box-shadow: 0 0 0 2px rgba(34,197,94,0.35);
+    }
 
     .btn-contact {
       width: 100%; background: none; color: var(--white);
@@ -263,25 +277,63 @@
 
     .modal-body { padding: 1.5rem; }
 
-    /* Date row */
-    .modal-dates {
-      display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: 0.75rem;
-      margin-bottom: 1.25rem;
+    /* Rental date-range calendar */
+    .rc { margin-bottom: 1.25rem; }
+    .rc-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 0.6rem;
     }
-    .date-field label {
-      display: block; font-size: 0.75rem; font-weight: 600; color: var(--muted);
-      letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 0.35rem;
-    }
-    .date-field input[type="date"] {
-      width: 100%; background: var(--surface); border: 1px solid var(--border);
-      border-radius: 0.5rem; color: var(--white); font-family: inherit;
-      font-size: 0.88rem; padding: 0.6rem 0.8rem; outline: none;
-      transition: border-color 0.2s; color-scheme: dark; cursor: pointer;
-    }
-    .date-field input[type="date"]:focus { border-color: #555; }
-    .date-arrow {
-      font-size: 1rem; color: var(--muted); padding-bottom: 0.6rem;
+    .rc-title { font-size: 0.9rem; font-weight: 700; color: var(--white); }
+    .rc-nav {
+      width: 1.9rem; height: 1.9rem; border-radius: 0.5rem;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--white); font-size: 1rem; line-height: 1; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
+      transition: border-color 0.15s, opacity 0.15s;
+    }
+    .rc-nav:hover:not(:disabled) { border-color: #555; }
+    .rc-nav:disabled { opacity: 0.3; cursor: not-allowed; }
+    .rc-dow, .rc-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+    .rc-dow { margin-bottom: 3px; }
+    .rc-dow span {
+      text-align: center; font-size: 0.6rem; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; padding: 0.15rem 0;
+    }
+    .rc-day {
+      aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; color: var(--white); background: var(--surface);
+      border: 1px solid transparent; border-radius: 0.45rem;
+      cursor: pointer; user-select: none;
+      transition: background 0.12s, border-color 0.12s;
+    }
+    .rc-day:hover:not(.rc-disabled):not(.rc-empty) { border-color: #666; }
+    .rc-empty { background: none; cursor: default; }
+    .rc-disabled { color: #444; cursor: not-allowed; background: #101010; }
+    .rc-booked {
+      color: #7a4b4b; text-decoration: line-through;
+      background: repeating-linear-gradient(45deg, #1b1010, #1b1010 3px, #140c0c 3px, #140c0c 6px);
+    }
+    .rc-inrange { background: rgba(34,197,94,0.16); border-radius: 0; }
+    .rc-start, .rc-end {
+      background: var(--success); color: #04140a; font-weight: 800; border-color: var(--success);
+    }
+    .rc-start { border-radius: 0.45rem 0 0 0.45rem; }
+    .rc-end   { border-radius: 0 0.45rem 0.45rem 0; }
+    .rc-start.rc-end { border-radius: 0.45rem; }
+    .rc-hint { font-size: 0.78rem; color: var(--muted); margin-top: 0.6rem; }
+    .rc-hint.rc-hint-err { color: #fca5a5; }
+    .rc-legend {
+      display: flex; gap: 1rem; margin-top: 0.5rem;
+      font-size: 0.68rem; color: var(--muted);
+    }
+    .rc-legend span { display: inline-flex; align-items: center; gap: 0.3rem; }
+    .rc-legend i {
+      width: 0.7rem; height: 0.7rem; border-radius: 0.2rem; display: inline-block;
+    }
+    .rc-legend .lg-sel { background: var(--success); }
+    .rc-legend .lg-blk {
+      background: repeating-linear-gradient(45deg, #1b1010, #1b1010 2px, #140c0c 2px, #140c0c 4px);
+      border: 1px solid #2a1a1a;
     }
 
     /* Price preview */
@@ -309,6 +361,31 @@
       background: #1e0a0a; border: 1px solid #7f1d1d; color: #fca5a5;
     }
 
+    /* Terms consent */
+    #modal-consent {
+      display: flex; align-items: flex-start; gap: 0.6rem;
+      margin-bottom: 1rem; cursor: pointer;
+    }
+    #modal-consent input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+    #modal-consent .consent-box {
+      flex-shrink: 0; width: 1.1rem; height: 1.1rem; margin-top: 0.1rem;
+      border: 1.5px solid #555; border-radius: 0.3rem; background: var(--surface);
+      position: relative; transition: background 0.15s, border-color 0.15s;
+    }
+    #modal-consent input:checked + .consent-box { background: var(--success); border-color: var(--success); }
+    #modal-consent input:checked + .consent-box::after {
+      content: ''; position: absolute; left: 0.33rem; top: 0.12rem;
+      width: 0.26rem; height: 0.52rem;
+      border: solid #04140a; border-width: 0 2px 2px 0; transform: rotate(45deg);
+    }
+    #modal-consent input:focus-visible + .consent-box { outline: 2px solid var(--success); outline-offset: 2px; }
+    #modal-consent .consent-text { font-size: 0.82rem; line-height: 1.6; color: #ccc; }
+    #modal-consent .terms-link {
+      background: none; border: none; padding: 0; font: inherit; cursor: pointer;
+      color: var(--white); font-weight: 600; text-decoration: underline; text-underline-offset: 2px;
+    }
+    #modal-consent .terms-link:hover { color: #d4d4d4; }
+
     /* Confirm button */
     #modal-confirm {
       width: 100%; background: var(--white); color: var(--black);
@@ -319,6 +396,17 @@
     }
     #modal-confirm:hover:not(:disabled) { background: #d4d4d4; }
     #modal-confirm:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    #modal-buy {
+      display: block; width: 100%; margin-top: 0.65rem;
+      text-align: center; text-decoration: none;
+      background: none; border: 1px solid var(--success);
+      color: var(--success); border-radius: 0.6rem;
+      padding: 0.7rem 1.5rem; font-size: 0.9rem; font-weight: 700;
+      transition: background 0.2s;
+    }
+    #modal-buy:hover { background: rgba(34,197,94,0.1); }
+    #modal-buy span { font-weight: 800; }
 
     .btn-spinner {
       width: 1rem; height: 1rem;
@@ -366,8 +454,6 @@
       #result-count { margin-left: 0; }
       .filter-divider { display: none; }
       footer { flex-direction: column; text-align: center; }
-      .modal-dates { grid-template-columns: 1fr; }
-      .date-arrow  { display: none; }
     }
   </style>
 </head>
@@ -435,6 +521,12 @@
       <option value="party">Party</option>
     </select>
 
+    <select id="filter-listing-type" class="filter-select" aria-label="Listing type">
+      <option value="">All listings</option>
+      <option value="rent">For Rent Only</option>
+      <option value="sale">For Sale Only</option>
+    </select>
+
     <span class="filter-divider"></span>
 
     <select id="sort-select" class="filter-select" aria-label="Sort by">
@@ -476,7 +568,7 @@
   <div id="modal-overlay" aria-hidden="true"></div>
 
   <!-- BOOKING MODAL -->
-  <div id="booking-modal" role="dialog" aria-modal="true" aria-labelledby="modal-item-name">
+  <div id="booking-modal" role="dialog" aria-modal="true" aria-labelledby="modal-item-name" tabindex="-1">
     <button id="modal-close" aria-label="Close modal">&times;</button>
 
     <!-- Item summary header -->
@@ -506,15 +598,20 @@
     <!-- Booking form -->
     <div class="modal-body" id="modal-form-section">
 
-      <div class="modal-dates">
-        <div class="date-field">
-          <label for="modal-start">From</label>
-          <input type="date" id="modal-start" />
+      <div class="rc" id="rc">
+        <div class="rc-bar">
+          <button type="button" class="rc-nav" id="rc-prev" aria-label="Previous month">&#8249;</button>
+          <div class="rc-title" id="rc-title">Month</div>
+          <button type="button" class="rc-nav" id="rc-next" aria-label="Next month">&#8250;</button>
         </div>
-        <div class="date-arrow">→</div>
-        <div class="date-field">
-          <label for="modal-end">To</label>
-          <input type="date" id="modal-end" />
+        <div class="rc-dow" aria-hidden="true">
+          <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
+        </div>
+        <div class="rc-grid" id="rc-grid"></div>
+        <p class="rc-hint" id="rc-hint">Pick your start date</p>
+        <div class="rc-legend" aria-hidden="true">
+          <span><i class="lg-sel"></i> Your dates</span>
+          <span><i class="lg-blk"></i> Booked / buffer</span>
         </div>
       </div>
 
@@ -530,13 +627,26 @@
 
       <div id="modal-alert" role="alert"></div>
 
+      <label id="modal-consent">
+        <input type="checkbox" id="agree-terms-checkout" />
+        <span class="consent-box" aria-hidden="true"></span>
+        <span class="consent-text">ฉันได้อ่านและยอมรับ
+          <button type="button" class="terms-link" data-open-terms="tos">ข้อตกลงการใช้งาน</button>
+          และ
+          <button type="button" class="terms-link" data-open-terms="privacy">นโยบายความเป็นส่วนตัว</button>
+        </span>
+      </label>
+
       <button id="modal-confirm" disabled>
         <span class="btn-spinner" id="confirm-spinner"></span>
         <span id="confirm-label">Confirm Booking</span>
       </button>
+
+      <a id="modal-buy" href="#" style="display:none">Buy it now for <span id="modal-buy-price"></span></a>
     </div>
   </div>
 
+  <script src="/terms-modal.js"></script>
   <script src="/marketplace.js"></script>
 </body>
 </html>

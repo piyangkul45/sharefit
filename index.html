@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LoopWear — Rent. Wear. Return.</title>
+  <title>LoopWear — Rent &amp; Buy fashion from real closets</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -15,6 +15,15 @@
       --surface:     #141414;
       --border:      #2e2e2e;
       --card-bg:     #111111;
+      --success:     #22c55e;   /* buy-price green (matches marketplace) */
+      --accent:      #ccff00;   /* electric lime — editorial CTA accent */
+      --accent-hi:   #dbff4d;
+      --accent-glow: rgba(204,255,0,0.55);
+      --glass-bg:    rgba(255,255,255,0.06);
+      --glass-brd:   rgba(255,255,255,0.14);
+      /* Editorial display serif — system fonts only (CSP blocks web fonts) */
+      --font-display: 'Didot', 'Bodoni MT', 'Hoefler Text', 'Iowan Old Style',
+                      'Palatino Linotype', Palatino, Georgia, 'Times New Roman', serif;
     }
 
     html { scroll-behavior: smooth; }
@@ -26,52 +35,73 @@
       line-height: 1.6;
     }
 
-    /* ── NAV ── */
-    nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      display: flex; flex-direction: column;
-      padding: 0 5%;
-      background: rgba(10,10,10,0.92);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
+    /* ── SITE HEADER — sticky glassmorphism, two stacked rows ── */
+    .site-header {
+      display: flex; flex-direction: column; width: 100%;
+      position: sticky; top: 0; z-index: 1000;
+      background: rgba(10, 10, 10, 0.8);
+      backdrop-filter: blur(16px) saturate(150%);
+      -webkit-backdrop-filter: blur(16px) saturate(150%);
+      border-bottom: 1px solid rgba(204, 255, 0, 0.15);
     }
-    .nav-top {
+
+    /* Row 1 — logo (left) · search (dead-center) · links + Get started (right).
+       Equal-width flex sides keep the search bar centered to the row, not to
+       the gap between two unequal groups. */
+    .nav-top-row {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 1.1rem 0; gap: 2rem;
+      width: 100%; padding: 1rem 2rem; gap: 1.5rem;
     }
     .logo {
-      font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px;
-      color: var(--white); text-decoration: none;
+      flex: 1 1 0; min-width: 0;
+      font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px;
+      color: var(--white); text-decoration: none; white-space: nowrap;
     }
-    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-right {
+      flex: 1 1 0;
+      display: flex; align-items: center; justify-content: flex-end; gap: 1.4rem;
+    }
+    .nav-links {
+      display: flex; align-items: center; gap: 1.4rem; list-style: none;
+    }
     .nav-links a {
-      color: #aaa; text-decoration: none; font-size: 0.9rem; transition: color 0.2s;
+      color: #aaa; text-decoration: none; font-size: 0.86rem;
+      white-space: nowrap; transition: color 0.2s;
     }
     .nav-links a:hover { color: var(--white); }
     .nav-cta {
-      background: var(--white); color: var(--black);
+      flex-shrink: 0;
+      background: rgba(255,255,255,0.1); color: var(--white);
+      border: 1px solid rgba(255,255,255,0.2);
       padding: 0.55rem 1.4rem; border-radius: 999px;
-      font-weight: 700; font-size: 0.88rem;
-      text-decoration: none; transition: background 0.2s; white-space: nowrap;
+      font-weight: 700; font-size: 0.86rem;
+      text-decoration: none; white-space: nowrap;
+      transition: background 0.2s, border-color 0.2s;
     }
-    .nav-cta:hover { background: var(--accent-dark); }
+    .nav-cta:hover {
+      background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.35);
+    }
 
-    /* ── NAV SEARCH ── */
+    /* Search bar — dead-centre column of Row 1 */
     .nav-search {
-      padding: 0.6rem 0 0.85rem;
-      border-top: 1px solid rgba(255,255,255,0.05);
+      flex: 1 1 0; min-width: 0;
+      max-width: 480px; margin: 0 auto;
       display: flex; justify-content: center;
     }
     .search-bar {
       display: flex; align-items: center;
-      width: 100%; max-width: 720px;
-      background: var(--card-bg); border: 1px solid var(--border);
+      width: 100%; max-width: 480px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px) saturate(150%);
+      -webkit-backdrop-filter: blur(16px) saturate(150%);
+      border: 1px solid var(--glass-brd);
       border-radius: 999px; overflow: hidden;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.08) inset, 0 8px 30px rgba(0,0,0,0.35);
       transition: border-color 0.2s, box-shadow 0.2s;
     }
     .search-bar:focus-within {
-      border-color: #555;
-      box-shadow: 0 0 0 3px rgba(255,255,255,0.04);
+      border-color: rgba(204,255,0,0.5);
+      box-shadow: 0 1px 0 rgba(255,255,255,0.08) inset, 0 0 0 3px rgba(204,255,0,0.12);
     }
     .search-input-wrap {
       display: flex; align-items: center;
@@ -83,115 +113,383 @@
       color: var(--white); font-size: 0.9rem; font-family: inherit; padding: 0.75rem 0;
     }
     .search-input::placeholder { color: var(--muted); }
-    .search-divider { flex-shrink: 0; width: 1px; height: 1.5rem; background: var(--border); }
-    .search-select-wrap {
-      position: relative; display: flex; align-items: center; flex-shrink: 0;
-    }
-    .search-select-wrap::after {
-      content: '▾'; position: absolute; right: 0.8rem; top: 50%;
-      transform: translateY(-50%); color: var(--muted); font-size: 0.7rem; pointer-events: none;
-    }
-    .search-select {
-      background: none; border: none; outline: none; cursor: pointer;
-      color: #aaa; font-size: 0.85rem; font-family: inherit;
-      padding: 0.75rem 2.2rem 0.75rem 1rem;
-      appearance: none; -webkit-appearance: none; color-scheme: dark;
-    }
-    .search-select:hover { color: var(--white); }
     .search-btn {
       flex-shrink: 0; background: var(--white); color: var(--black);
       border: none; cursor: pointer; font-family: inherit;
-      font-weight: 700; font-size: 0.85rem;
-      padding: 0.55rem 1.3rem; margin: 0.3rem 0.3rem 0.3rem 0;
+      font-weight: 700; font-size: 0.82rem;
+      padding: 0.5rem 1.15rem; margin: 0.28rem 0.28rem 0.28rem 0;
       border-radius: 999px; transition: background 0.2s; white-space: nowrap;
     }
     .search-btn:hover { background: var(--accent-dark); }
 
+    /* ── ROW 2: category text links, cleanly below Row 1 ── */
+
     /* ── HERO ── */
     .hero {
-      min-height: 100vh;
-      display: flex; align-items: center; justify-content: center;
-      text-align: center; padding: 9rem 5% 4rem;
       position: relative; overflow: hidden;
+      /* header is sticky (in normal flow) — no clearance padding needed */
+      min-height: calc(100vh - 8rem);
+      display: flex; align-items: center;
+      padding: 4rem 6%;
+      background: var(--black);
     }
-    .hero-bg {
-      position: absolute; inset: 0;
+
+    /* ---- Dynamic background photo grid ---- */
+    .hero-grid {
+      position: absolute; inset: 0; z-index: 0; overflow: hidden;
+      display: grid; gap: 6px;
+      grid-template-columns: repeat(auto-fill, minmax(clamp(120px, 15vw, 200px), 1fr));
+      grid-auto-rows: clamp(160px, 26vh, 300px);
+    }
+    .hero-grid-cell {
+      position: relative; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(150deg, #161616, #242424);
+    }
+    .hero-grid-cell img {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; opacity: 0; transform: scale(1.03);
+      filter: grayscale(0.18) contrast(1.05) brightness(0.82);
+      transition: opacity 1.1s ease;
+    }
+    .hero-grid-glyph {
+      font-size: clamp(1.5rem, 3.4vw, 2.8rem);
+      opacity: 0.2; filter: grayscale(1); user-select: none;
+    }
+    .hero-grid-cell.has-img img { opacity: 1; }
+    /* Only a subset drifts — mixed motion reads more organic and stays light */
+    .hero-grid-cell:nth-child(odd).has-img img {
+      animation: heroKen 34s ease-in-out infinite alternate;
+    }
+    .hero-grid-cell:nth-child(4n+1).has-img img { animation-duration: 44s; animation-delay: -16s; }
+    .hero-grid-cell:nth-child(6n+3).has-img img { animation-delay: -26s; }
+
+    /* ---- Dark gradient overlay for legibility ---- */
+    .hero-scrim {
+      position: absolute; inset: 0; z-index: 1; pointer-events: none;
       background:
-        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255,255,255,0.04) 0%, transparent 70%),
-        radial-gradient(ellipse 60% 40% at 20% 80%, rgba(255,255,255,0.02) 0%, transparent 60%);
+        linear-gradient(97deg,
+          rgba(10,10,10,0.97) 0%, rgba(10,10,10,0.9) 30%,
+          rgba(10,10,10,0.62) 58%, rgba(10,10,10,0.42) 100%),
+        linear-gradient(0deg,
+          rgba(10,10,10,0.92) 0%, rgba(10,10,10,0.12) 34%,
+          rgba(10,10,10,0.12) 60%, rgba(10,10,10,0.85) 100%),
+        radial-gradient(ellipse 50% 45% at 6% 44%, rgba(204,255,0,0.10) 0%, transparent 70%);
     }
-    .hero-content { position: relative; max-width: 780px; }
-    .hero-badge {
-      display: inline-block;
-      background: rgba(255,255,255,0.07); color: #aaa;
-      border: 1px solid rgba(255,255,255,0.12);
-      padding: 0.35rem 1rem; border-radius: 999px;
-      font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em;
-      text-transform: uppercase; margin-bottom: 1.5rem;
+
+    /* ---- Editorial copy ---- */
+    .hero-content { position: relative; z-index: 3; max-width: 660px; }
+
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      padding: 0.4rem 0.95rem;
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px) saturate(150%);
+      -webkit-backdrop-filter: blur(10px) saturate(150%);
+      border: 1px solid var(--glass-brd); border-radius: 999px;
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.2em;
+      text-transform: uppercase; color: #d3d3d3;
+      margin-bottom: 1.7rem;
     }
+    .hero-eyebrow::before {
+      content: ''; width: 0.42rem; height: 0.42rem; border-radius: 50%;
+      background: var(--accent); box-shadow: 0 0 9px var(--accent);
+      animation: dotPulse 2.4s ease-in-out infinite;
+    }
+
+    /* Editorial high-fashion headline: display serif + italic accent + tracked sans */
     .hero h1 {
-      font-size: clamp(2.8rem, 7vw, 5.5rem);
-      font-weight: 900; line-height: 1.05;
-      letter-spacing: -2px; margin-bottom: 1.25rem;
+      font-family: var(--font-display);
+      font-size: clamp(2.6rem, 5.8vw, 4.9rem);
+      font-weight: 500; line-height: 1.04;
+      letter-spacing: -0.015em; margin-bottom: 1.4rem;
+      text-shadow: 0 2px 30px rgba(0,0,0,0.5);
     }
-    .hero h1 span { color: #888; }
-    .hero p { font-size: 1.15rem; color: #aaa; max-width: 520px; margin: 0 auto 2.5rem; }
-    .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .hero h1 .hl-1 { font-weight: 400; }
+    .hero h1 .hl-2 {
+      font-style: italic; font-weight: 400; font-size: 1.04em;
+      letter-spacing: -0.01em; color: var(--accent);
+    }
+    .hero h1 .hl-3 {
+      display: block; margin-top: 0.2em;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 0.5em; font-weight: 800; letter-spacing: 0.12em;
+      text-transform: uppercase; color: #fff;
+    }
+
+    .hero-lead {
+      font-size: clamp(1rem, 1.3vw, 1.18rem);
+      color: #c2c2c2; line-height: 1.65;
+      max-width: 32rem; margin-bottom: 2.5rem;
+    }
+    .hero-lead strong { color: var(--white); font-weight: 600; }
+
+    .hero-actions { display: flex; gap: 0.9rem; flex-wrap: wrap; align-items: center; }
 
     .btn-primary {
-      background: var(--white); color: var(--black);
-      padding: 0.9rem 2.2rem; border-radius: 999px;
-      font-weight: 800; font-size: 1rem; text-decoration: none;
-      transition: all 0.2s; box-shadow: 0 0 24px rgba(255,255,255,0.08);
+      position: relative; overflow: hidden;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: var(--accent); color: #0a0a0a;
+      padding: 1rem 2.2rem; border-radius: 999px;
+      font-weight: 800; font-size: 0.98rem; letter-spacing: 0.01em;
+      text-decoration: none; white-space: nowrap;
+      box-shadow: 0 10px 32px -8px var(--accent-glow);
+      transition: transform 0.3s cubic-bezier(.2,.7,.2,1), box-shadow 0.3s ease, background 0.3s ease;
+      animation: ctaPulse 3.2s ease-in-out infinite;   /* soft pulsing neon glow */
+    }
+    .btn-primary::after {
+      content: ''; position: absolute; top: 0; left: -60%;
+      width: 45%; height: 100%; transform: skewX(-20deg); pointer-events: none;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+      transition: left 0.6s ease;
     }
     .btn-primary:hover {
-      background: var(--accent-dark);
-      box-shadow: 0 0 36px rgba(255,255,255,0.14);
-      transform: translateY(-1px);
+      animation: none;
+      background: var(--accent-hi); transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 20px 50px -6px var(--accent-glow), 0 0 0 1px rgba(204,255,0,0.45), 0 0 26px 2px rgba(204,255,0,0.5);
     }
+    .btn-primary:hover::after { left: 130%; }
+    .btn-primary:active { transform: translateY(0) scale(0.99); }
+
     .btn-ghost {
-      border: 1px solid var(--border); color: var(--white);
-      padding: 0.9rem 2.2rem; border-radius: 999px;
-      font-weight: 600; font-size: 1rem; text-decoration: none; transition: all 0.2s;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.05); color: var(--white);
+      border: 1px solid rgba(255,255,255,0.25);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      padding: 1rem 2rem; border-radius: 999px;
+      font-weight: 600; font-size: 0.98rem; text-decoration: none; white-space: nowrap;
+      transition: border-color 0.3s ease, color 0.3s ease, background 0.3s ease, transform 0.3s ease;
     }
-    .btn-ghost:hover { border-color: #555; background: rgba(255,255,255,0.04); }
-
-    .hero-stats {
-      display: flex; gap: 3rem; justify-content: center;
-      margin-top: 4rem; flex-wrap: wrap;
+    .btn-ghost:hover {
+      border-color: var(--accent); color: var(--accent);
+      background: rgba(204,255,0,0.08); transform: translateY(-2px);
     }
-    .stat-item { text-align: center; }
-    .stat-item .num { font-size: 2rem; font-weight: 900; color: var(--white); }
-    .stat-item .label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
 
-    /* ── HOW IT WORKS ── */
-    .how { padding: 6rem 5%; }
+    .hero-trust {
+      display: flex; gap: 2rem; flex-wrap: wrap;
+      margin-top: 3rem; padding-top: 1.7rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .hero-trust span { font-size: 0.8rem; color: var(--muted); letter-spacing: 0.02em; }
+    .hero-trust strong {
+      display: block; margin-bottom: 0.1rem;
+      font-size: 1.4rem; font-weight: 900; color: var(--white); letter-spacing: -0.02em;
+    }
+
+    /* ---- Floating product badges ---- */
+    .hero-badges { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+    .hero-price-badge {
+      position: absolute; pointer-events: auto;
+      display: flex; flex-direction: column; gap: 0.34rem;
+      width: max-content; max-width: 200px;
+      padding: 0.62rem 0.82rem;
+      background: rgba(16,16,16,0.52);
+      backdrop-filter: blur(14px) saturate(150%);
+      -webkit-backdrop-filter: blur(14px) saturate(150%);
+      border: 1px solid rgba(255,255,255,0.16); border-radius: 14px;
+      box-shadow: 0 14px 38px rgba(0,0,0,0.5);
+      color: #fff; text-decoration: none;
+      animation: badgeFloat 5.5s ease-in-out infinite;
+      transition: transform 0.25s ease, border-color 0.25s ease;
+    }
+    .hero-price-badge:hover { transform: translateY(-3px); border-color: rgba(204,255,0,0.55); }
+    .badge-title {
+      font-size: 0.78rem; font-weight: 700; letter-spacing: -0.01em; line-height: 1.25;
+      max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .badge-lines { display: flex; flex-wrap: wrap; gap: 0.15rem 0.7rem; }
+    .badge-rent, .badge-buy { display: inline-flex; align-items: baseline; gap: 0.3rem; font-size: 0.72rem; }
+    .badge-rent[hidden], .badge-buy[hidden] { display: none; }
+    .badge-rent .badge-kind, .badge-buy .badge-kind {
+      font-size: 0.55rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #8c8c8c;
+    }
+    .badge-rent .badge-num { font-weight: 800; color: var(--accent); font-size: 0.82rem; }
+    .badge-buy  .badge-num { font-weight: 800; color: #fff; font-size: 0.82rem; }
+    .badge-rent i { font-style: normal; color: #9a9a9a; font-size: 0.64rem; }
+    .hero-badge-1 { top: 20%; right: 6%; }
+    .hero-badge-2 { top: 49%; right: 19%; animation-delay: -1.8s; }
+    .hero-badge-3 { bottom: 15%; right: 9%; animation-delay: -3.4s; }
+
+    @keyframes heroKen {
+      from { transform: scale(1.03) translate(0, 0); }
+      to   { transform: scale(1.12) translate(-1.5%, -1.5%); }
+    }
+    @keyframes badgeFloat {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-9px); }
+    }
+    @keyframes dotPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.35; transform: scale(0.8); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .hero-grid-cell img,
+      .hero-price-badge,
+      .hero-eyebrow::before { animation: none !important; }
+      .btn-primary::after { display: none; }
+      .btn-primary, .btn-ghost { transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease; }
+    }
+
+    /* ── SHARED SECTION HEADINGS ── */
     .section-label {
       color: var(--muted); font-size: 0.8rem; font-weight: 700;
       letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.75rem;
     }
     .section-title {
-      font-size: clamp(2rem, 4vw, 3rem);
-      font-weight: 900; letter-spacing: -1px; margin-bottom: 1rem;
+      font-family: var(--font-display);
+      font-size: clamp(2.1rem, 4.2vw, 3.15rem);
+      font-weight: 500; letter-spacing: -0.01em; margin-bottom: 1rem;
     }
     .section-sub { color: var(--muted); max-width: 480px; margin-bottom: 3.5rem; }
-    .steps {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem;
+
+    /* ── ROW 2: CATEGORY BAR + SASOM-STYLE MEGA MENU ── */
+    .nav-bottom-row {
+      display: flex; align-items: center; justify-content: center;
+      width: 100%; padding: 0.75rem 2rem;
+      border-top: 1px solid rgba(255,255,255,0.05);
     }
-    .step-card {
+    /* Plain-text category links: no pills, no icons, no emojis */
+    .cat-nav {
+      display: flex; align-items: center; flex-wrap: nowrap;
+      gap: 1.5rem;
+      max-width: 100%; min-width: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .cat-nav::-webkit-scrollbar { display: none; }
+
+    .cat-link {
+      position: relative; flex: 0 0 auto; white-space: nowrap;
+      padding: 0.3rem 0 0.5rem;
+      color: #b6b6b6; font-family: inherit; font-size: 0.82rem; font-weight: 600;
+      letter-spacing: 0.01em; text-decoration: none; cursor: pointer;
+      transition: color 0.18s ease, text-shadow 0.25s ease;
+    }
+    /* Animated neon bottom border — grows from the left on hover / when active */
+    .cat-link::after {
+      content: ''; position: absolute; left: 0; right: 0; bottom: 0.1rem;
+      height: 2px; background: #CCFF00; border-radius: 2px;
+      transform: scaleX(0); transform-origin: left;
+      transition: transform 0.28s cubic-bezier(.2,.7,.2,1);
+    }
+    .cat-link:hover {
+      color: #fff;
+      text-shadow: 0 0 8px rgba(204, 255, 0, 0.4);
+    }
+    .cat-link:hover::after,
+    .cat-link.is-active::after,
+    .cat-link.is-open::after { transform: scaleX(1); }
+    .cat-link.is-active,
+    .cat-link.is-open { color: #fff; }
+    /* Active category badge — soft pulsing glow */
+    .cat-link.is-active::after {
+      box-shadow: 0 0 8px rgba(204, 255, 0, 0.7);
+      animation: badgePulse 2.6s ease-in-out infinite;
+    }
+
+    /* SASOM-style mega panel — opens directly BELOW Row 2, full header width,
+       never overlapping the header text (it sits under the sticky header) */
+    .cat-mega {
+      position: absolute; top: 100%; left: 0; right: 0;
+      z-index: 990;
+      display: none;
+      padding: 2.5rem 2rem 3rem;
+      background: rgba(10, 10, 10, 0.8);
+      backdrop-filter: blur(16px) saturate(150%);
+      -webkit-backdrop-filter: blur(16px) saturate(150%);
+      border-top: 1px solid rgba(204, 255, 0, 0.15);
+      border-bottom: 1px solid rgba(204, 255, 0, 0.15);
+      box-shadow: 0 40px 90px -24px rgba(0,0,0,0.85);
+    }
+    .site-header.mega-open .cat-mega {
+      display: block;
+      animation: catMegaIn 0.18s ease-out;
+    }
+    @keyframes catMegaIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .cat-mega-all {
+      display: inline-flex; align-items: center; margin-bottom: 1.75rem;
+      color: #fff; font-size: 0.78rem; font-weight: 700;
+      letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none;
+      transition: color 0.15s ease;
+    }
+    .cat-mega-all:hover { color: #CCFF00; }
+
+    .cat-mega-inner {
+      display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 3rem; max-width: 820px;
+    }
+    .mega-col h4 {
+      font-size: 0.66rem; font-weight: 800; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 0.9rem; padding-bottom: 0.65rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .mega-col a {
+      display: block; padding: 0.42rem 0;
+      color: #c9c9c9; font-size: 0.88rem; text-decoration: none;
+      transition: color 0.16s ease, transform 0.16s ease, text-shadow 0.25s ease;
+    }
+    .mega-col a:hover {
+      color: #CCFF00; transform: translateX(3px);
+      text-shadow: 0 0 8px rgba(204, 255, 0, 0.4);
+    }
+
+    /* Soft pulsing neon glow — active status badges + primary CTA */
+    @keyframes badgePulse {
+      0%, 100% { box-shadow: 0 0 6px rgba(204, 255, 0, 0.45); }
+      50%      { box-shadow: 0 0 15px rgba(204, 255, 0, 0.95); }
+    }
+    @keyframes ctaPulse {
+      0%, 100% { box-shadow: 0 10px 32px -8px var(--accent-glow), 0 0 0 rgba(204,255,0,0); }
+      50%      { box-shadow: 0 10px 32px -8px var(--accent-glow), 0 0 22px 1px rgba(204, 255, 0, 0.5); }
+    }
+
+    @media (max-width: 720px) {
+      .cat-mega { padding: 1.75rem 5% 2rem; }
+      .cat-mega-inner { grid-template-columns: 1fr; gap: 1.75rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .cat-link, .mega-col a { transition: color 0.15s ease; text-shadow: none !important; }
+      .cat-link.is-active::after { animation: none; }
+      .btn-primary { animation: none !important; }
+      .site-header.mega-open .cat-mega { animation: none; }
+    }
+
+    /* ── HOW LOOPWEAR WORKS ── */
+    .hlw { padding: 6rem 5%; }
+    .hlw-steps {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem; margin-top: 3rem;
+    }
+    .hlw-step {
       background: var(--card-bg); border: 1px solid var(--border);
-      border-radius: 1.25rem; padding: 2rem;
+      border-radius: 1.25rem; padding: 2rem 1.75rem;
       transition: border-color 0.2s, transform 0.2s;
     }
-    .step-card:hover { border-color: #555; transform: translateY(-3px); }
-    .step-num {
-      width: 2.5rem; height: 2.5rem;
-      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 50%; display: flex; align-items: center; justify-content: center;
-      font-size: 0.9rem; font-weight: 800; color: var(--white); margin-bottom: 1.25rem;
+    .hlw-step:hover { border-color: #555; transform: translateY(-3px); }
+    .hlw-num {
+      font-size: 0.72rem; font-weight: 800; letter-spacing: 0.14em;
+      color: var(--accent); margin-bottom: 1rem;
     }
-    .step-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
-    .step-card p  { font-size: 0.9rem; color: var(--muted); }
+    .hlw-step h3 { font-size: 1.12rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -0.01em; }
+    .hlw-step > p { font-size: 0.9rem; color: var(--muted); margin-bottom: 1.3rem; line-height: 1.55; }
+    .hlw-flows { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+    .hlw-flows li {
+      display: flex; align-items: flex-start; gap: 0.6rem;
+      font-size: 0.85rem; color: #cfcfcf; line-height: 1.45;
+    }
+    .flow-tag {
+      flex-shrink: 0; margin-top: 0.08rem;
+      font-size: 0.6rem; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase;
+      padding: 0.2rem 0.5rem; border-radius: 999px;
+    }
+    .flow-rent { background: var(--accent); color: #0a0a0a; }
+    .flow-buy  { background: rgba(34,197,94,0.16); color: var(--success); border: 1px solid rgba(34,197,94,0.32); }
 
     /* ── CAROUSELS WRAPPER ── */
     .carousels-wrap { background: var(--surface); }
@@ -264,16 +562,17 @@
       border: 1px solid var(--border);
       overflow: hidden;
       scroll-snap-align: start;
-      text-decoration: none;
-      color: inherit;
       display: flex; flex-direction: column;
       transition: border-color 0.2s, transform 0.22s, box-shadow 0.22s;
-      cursor: pointer;
     }
     .cc:hover {
       border-color: #484848;
       transform: translateY(-5px);
       box-shadow: 0 14px 36px rgba(0,0,0,0.45);
+    }
+    .cc-link {
+      text-decoration: none; color: inherit; cursor: pointer;
+      display: flex; flex-direction: column; flex: 1;
     }
     .cc-img {
       height: 200px; overflow: hidden;
@@ -312,10 +611,31 @@
       font-size: 0.77rem; color: var(--muted); margin-bottom: auto;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
+    .cc-price-wrap { margin-top: 0.65rem; display: flex; flex-direction: column; gap: 0.15rem; }
     .cc-price {
-      font-size: 0.95rem; font-weight: 800; color: var(--white); margin-top: 0.65rem;
+      font-size: 0.95rem; font-weight: 800; color: var(--white);
     }
     .cc-price span { font-size: 0.72rem; font-weight: 400; color: var(--muted); }
+    .cc-price-sale { color: var(--success); }
+
+    /* ── CARD ACTIONS ── */
+    .cc-actions {
+      display: flex; gap: 0.4rem; padding: 0 0.9rem 0.9rem;
+    }
+    .cc-btn {
+      flex: 1; text-align: center; text-decoration: none;
+      border-radius: 0.5rem; padding: 0.5rem 0.6rem;
+      font-size: 0.82rem; font-weight: 700; letter-spacing: 0.01em;
+      transition: background 0.2s, border-color 0.2s, opacity 0.2s;
+    }
+    .cc-btn-rent {
+      background: var(--white); color: var(--black); border: 1px solid var(--white);
+    }
+    .cc-btn-rent:hover { background: #d4d4d4; border-color: #d4d4d4; }
+    .cc-btn-buy {
+      background: var(--success); color: #04140a; border: 1px solid var(--success);
+    }
+    .cc-btn-buy:hover { opacity: 0.88; }
 
     /* ── ARROW BUTTONS ── */
     .carousel-btn {
@@ -403,22 +723,52 @@
       margin: 0 5%;
     }
 
-    /* ── WHY ── */
-    .why { padding: 6rem 5%; }
-    .why-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 2rem; margin-top: 3.5rem;
+    /* ── FEATURED COLLECTIONS ── */
+    .featured { padding: 5rem 5%; background: var(--black); border-top: 1px solid var(--border); }
+    .fc-head {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      flex-wrap: wrap; gap: 1.25rem; margin-bottom: 2rem;
     }
-    .why-icon {
-      font-size: 2rem; margin-bottom: 1rem;
-      width: 3.5rem; height: 3.5rem;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 0.75rem;
+    .fc-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .fc-tab {
+      background: var(--card-bg); border: 1px solid var(--border);
+      color: var(--muted); font-family: inherit; font-size: 0.85rem; font-weight: 700;
+      padding: 0.52rem 1.15rem; border-radius: 999px; cursor: pointer;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+    .fc-tab:hover { color: var(--white); border-color: #555; }
+    .fc-tab.active { background: var(--accent); color: #0a0a0a; border-color: var(--accent); }
+    .fc-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 1.2rem;
+    }
+    .fc-grid .cc { width: auto; }
+    .fc-empty {
+      grid-column: 1 / -1; text-align: center; color: var(--muted);
+      font-size: 0.9rem; padding: 3rem 0;
+    }
+    .fc-empty a { color: var(--white); font-weight: 600; text-decoration: none; }
+    .fc-empty a:hover { text-decoration: underline; }
+
+    /* ── TRUST & SECURITY ── */
+    .trust { padding: 5.5rem 5%; border-top: 1px solid var(--border); }
+    .trust-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem; margin-top: 3rem;
+    }
+    .trust-item {
+      background: linear-gradient(150deg, var(--card-bg), #161616);
+      border: 1px solid var(--border);
+      border-radius: 1.25rem; padding: 2rem 1.75rem;
+    }
+    .trust-icon {
+      width: 3rem; height: 3rem; border-radius: 0.8rem;
       display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; margin-bottom: 1.1rem;
+      background: rgba(204,255,0,0.1); border: 1px solid rgba(204,255,0,0.25);
     }
-    .why-item h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; }
-    .why-item p  { font-size: 0.88rem; color: var(--muted); }
+    .trust-item h3 { font-size: 1.05rem; font-weight: 800; margin-bottom: 0.45rem; }
+    .trust-item p { font-size: 0.88rem; color: var(--muted); line-height: 1.6; }
 
     /* ── CTA ── */
     .cta-section {
@@ -462,21 +812,41 @@
     .footer-copy { color: var(--muted); font-size: 0.8rem; }
 
     /* ── RESPONSIVE ── */
+    @media (max-width: 1080px) {
+      /* Row 1 gets tight — drop the secondary text links, keep logo/search/CTA */
+      .nav-links { display: none; }
+    }
+    @media (max-width: 1040px) {
+      .hero { min-height: calc(100vh - 7rem); padding: 3.5rem 6%; }
+      .hero-content { max-width: 640px; }
+      .hero-scrim {
+        background:
+          linear-gradient(180deg, rgba(10,10,10,0.84) 0%, rgba(10,10,10,0.62) 45%, rgba(10,10,10,0.92) 100%),
+          linear-gradient(97deg, rgba(10,10,10,0.92) 0%, rgba(10,10,10,0.55) 100%),
+          radial-gradient(ellipse 60% 40% at 10% 40%, rgba(204,255,0,0.09) 0%, transparent 70%);
+      }
+      .hero-badges { display: none; }
+    }
     @media (max-width: 860px) {
       .cc  { width: 200px; }
       .sk  { width: 200px; }
     }
+    @media (max-width: 680px) {
+      /* Row 1 wraps: logo + CTA on top, search drops to its own full-width line */
+      .nav-top-row { flex-wrap: wrap; gap: 0.75rem 1rem; padding: 0.85rem 1.25rem; }
+      .nav-search { order: 3; flex-basis: 100%; }
+      .search-bar { max-width: none; }
+      .nav-bottom-row { padding: 0.7rem 1.25rem; }
+    }
     @media (max-width: 640px) {
-      .nav-links { display: none; }
-      .search-bar { border-radius: 1rem; flex-wrap: wrap; }
-      .search-input-wrap { width: 100%; border-bottom: 1px solid var(--border); }
-      .search-divider { display: none; }
-      .search-select-wrap { flex: 1; }
-      .search-select { padding: 0.65rem 2rem 0.65rem 0.75rem; font-size: 0.82rem; }
-      .search-btn { margin: 0.25rem 0.25rem 0.25rem 0; padding: 0.5rem 1rem; }
-      .hero { padding-top: 12rem; }
-      .hero h1 { letter-spacing: -1px; }
-      .hero-stats { gap: 1.5rem; }
+      .search-btn { padding: 0.5rem 1rem; }
+      .hero { min-height: auto; padding: 3rem 7% 3.5rem; }
+      .hero-grid { grid-template-columns: repeat(auto-fill, minmax(46%, 1fr)); grid-auto-rows: 34vw; }
+      .cat-nav { gap: 1.25rem; }
+      .cat-link { font-size: 0.8rem; }
+      .hero-actions { gap: 0.7rem; }
+      .hero-actions .btn-primary, .hero-actions .btn-ghost { flex: 1 1 100%; }
+      .hero-trust { gap: 1.4rem; margin-top: 2.4rem; }
       footer { flex-direction: column; text-align: center; }
 
       .cc  { width: 170px; }
@@ -493,116 +863,158 @@
 </head>
 <body>
 
-  <!-- NAV -->
-  <nav>
-    <div class="nav-top">
+  <!-- SITE HEADER — sticky, two stacked rows -->
+  <header class="site-header">
+
+    <!-- ROW 1 (Main Navigation) -->
+    <div class="nav-top-row">
       <a href="/" class="logo">LoopWear</a>
-      <ul class="nav-links">
-        <li><a href="#how">How it works</a></li>
-        <li><a href="/auth/signup.html">Sign Up</a></li>
-        <li><a href="/marketplace.html">Browse</a></li>
-        <li><a href="/list-item.html">List an item</a></li>
-      </ul>
-      <a href="/auth/signup.html" class="nav-cta">Get started</a>
-    </div>
-    <div class="nav-search">
-      <div class="search-bar">
-        <div class="search-input-wrap">
-          <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-            <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
-          </svg>
-          <input type="text" id="home-search-input" class="search-input"
-                 placeholder="Search pieces, brands, occasions…" aria-label="Search" />
+
+      <div class="nav-search">
+        <div class="search-bar">
+          <div class="search-input-wrap">
+            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
+            </svg>
+            <input type="text" id="home-search-input" class="search-input"
+                   placeholder="Search pieces, brands, occasions…" aria-label="Search" />
+          </div>
+          <button id="home-search-btn" class="search-btn" type="button">Search</button>
         </div>
-        <span class="search-divider"></span>
-        <div class="search-select-wrap">
-          <select id="home-search-cat" class="search-select" aria-label="Category">
-            <option value="">Category</option>
-            <option value="dresses">Dresses</option>
-            <option value="tops">Tops</option>
-            <option value="bottoms">Bottoms</option>
-            <option value="outerwear">Outerwear</option>
-            <option value="footwear">Footwear</option>
-            <option value="accessories">Accessories</option>
-            <option value="activewear">Activewear</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-        <span class="search-divider"></span>
-        <div class="search-select-wrap">
-          <select id="home-search-style" class="search-select" aria-label="Style">
-            <option value="">Style</option>
-            <option value="casual">Casual</option>
-            <option value="formal">Formal</option>
-            <option value="streetwear">Streetwear</option>
-            <option value="vintage">Vintage</option>
-            <option value="minimalist">Minimalist</option>
-            <option value="bohemian">Bohemian</option>
-            <option value="party">Party</option>
-          </select>
-        </div>
-        <button id="home-search-btn" class="search-btn" type="button">Search</button>
+      </div>
+
+      <div class="nav-right">
+        <ul class="nav-links">
+          <li><a href="#how">How it works</a></li>
+          <li><a href="/marketplace.html">Browse</a></li>
+          <li><a href="/list-item.html">List an item</a></li>
+          <li><a href="/auth/signup.html">Sign Up</a></li>
+        </ul>
+        <a href="/auth/signup.html" class="nav-cta">Get started</a>
       </div>
     </div>
-  </nav>
+
+    <!-- ROW 2 (Category Bar) -->
+    <div class="nav-bottom-row">
+      <nav class="cat-nav" id="cat-nav" aria-label="Shop by category">
+        <a href="/marketplace.html"                     class="cat-link is-active" data-cat="all">For You</a>
+        <a href="/marketplace.html?category=dresses"     class="cat-link" data-cat="dresses">Dresses</a>
+        <a href="/marketplace.html?category=outerwear"   class="cat-link" data-cat="outerwear">Outerwear</a>
+        <a href="/marketplace.html?category=tops"        class="cat-link" data-cat="tops">Tops</a>
+        <a href="/marketplace.html?category=bottoms"     class="cat-link" data-cat="bottoms">Bottoms</a>
+        <a href="/marketplace.html?category=footwear"    class="cat-link" data-cat="footwear">Footwear</a>
+        <a href="/marketplace.html?category=accessories" class="cat-link" data-cat="accessories">Accessories</a>
+        <a href="/marketplace.html?category=activewear"  class="cat-link" data-cat="activewear">Activewear</a>
+        <a href="/marketplace.html?style=formal"         class="cat-link" data-cat="occasionwear">Occasionwear</a>
+        <a href="/marketplace.html?style=vintage"        class="cat-link" data-cat="vintage">Vintage</a>
+      </nav>
+    </div>
+
+    <!-- Mega menu — opens directly below Row 2, spanning the header width -->
+    <div class="cat-mega" id="cat-mega" role="region" aria-label="Category links"></div>
+  </header>
 
   <!-- HERO -->
   <section class="hero" id="home">
-    <div class="hero-bg"></div>
+    <div class="hero-grid" aria-hidden="true">
+      <div class="hero-grid-cell"></div><div class="hero-grid-cell"></div>
+      <div class="hero-grid-cell"></div><div class="hero-grid-cell"></div>
+      <div class="hero-grid-cell"></div><div class="hero-grid-cell"></div>
+      <div class="hero-grid-cell"></div><div class="hero-grid-cell"></div>
+      <div class="hero-grid-cell"></div><div class="hero-grid-cell"></div>
+      <div class="hero-grid-cell"></div><div class="hero-grid-cell"></div>
+      <div class="hero-grid-cell"></div><div class="hero-grid-cell"></div>
+      <div class="hero-grid-cell"></div><div class="hero-grid-cell"></div>
+      <div class="hero-grid-cell"></div><div class="hero-grid-cell"></div>
+      <div class="hero-grid-cell"></div><div class="hero-grid-cell"></div>
+      <div class="hero-grid-cell"></div><div class="hero-grid-cell"></div>
+      <div class="hero-grid-cell"></div><div class="hero-grid-cell"></div>
+      <div class="hero-grid-cell"></div><div class="hero-grid-cell"></div>
+      <div class="hero-grid-cell"></div><div class="hero-grid-cell"></div>
+      <div class="hero-grid-cell"></div><div class="hero-grid-cell"></div>
+      <div class="hero-grid-cell"></div><div class="hero-grid-cell"></div>
+    </div>
+    <div class="hero-scrim" aria-hidden="true"></div>
+
     <div class="hero-content">
-      <div class="hero-badge">P2P Fashion Rental</div>
-      <h1>Wear more.<br /><span>Own less.</span></h1>
-      <p>Borrow designer fits from real people near you — or earn money renting out your wardrobe.</p>
+      <div class="hero-eyebrow">Editorial fashion &middot; Rent or own</div>
+      <h1>
+        <span class="hl-1">Wear</span> <span class="hl-2">High Fashion.</span>
+        <span class="hl-3">Rent or Own It.</span>
+      </h1>
+      <p class="hero-lead">
+        Borrow the runway for one night, or make it a permanent part of your closet.
+        Designer pieces from real wardrobes — <strong>ready to rent or buy</strong>.
+      </p>
       <div class="hero-actions">
-        <a href="/marketplace.html" class="btn-primary">Browse pieces</a>
+        <a href="/marketplace.html" class="btn-primary">Rent or buy now</a>
         <a href="/auth/signup.html" class="btn-ghost">List your closet</a>
       </div>
-      <div class="hero-stats">
-        <div class="stat-item">
-          <div class="num">12K+</div>
-          <div class="label">Pieces listed</div>
-        </div>
-        <div class="stat-item">
-          <div class="num">4.8★</div>
-          <div class="label">Avg. rating</div>
-        </div>
-        <div class="stat-item">
-          <div class="num">3,200</div>
-          <div class="label">Lenders</div>
-        </div>
-        <div class="stat-item">
-          <div class="num">90%</div>
-          <div class="label">Less waste</div>
-        </div>
+      <div class="hero-trust">
+        <span><strong>12K+</strong> pieces to rent &amp; buy</span>
+        <span><strong>3,200</strong> closets</span>
+        <span><strong>4.8&#9733;</strong> avg. rating</span>
       </div>
+    </div>
+
+    <!-- Floating product badges (real listings injected by home.js) -->
+    <div class="hero-badges">
+      <a class="hero-price-badge hero-badge-1" href="/marketplace.html">
+        <span class="badge-title">Tailored wool blazer</span>
+        <span class="badge-lines">
+          <span class="badge-rent"><span class="badge-kind">Rent</span><span class="badge-num">&#3647;250</span><i>/day</i></span>
+          <span class="badge-buy"><span class="badge-kind">Buy</span><span class="badge-num">&#3647;1,900</span></span>
+        </span>
+      </a>
+      <a class="hero-price-badge hero-badge-2" href="/marketplace.html">
+        <span class="badge-title">Silk slip dress</span>
+        <span class="badge-lines">
+          <span class="badge-rent"><span class="badge-kind">Rent</span><span class="badge-num">&#3647;420</span><i>/day</i></span>
+          <span class="badge-buy" hidden><span class="badge-kind">Buy</span><span class="badge-num"></span></span>
+        </span>
+      </a>
+      <a class="hero-price-badge hero-badge-3" href="/marketplace.html">
+        <span class="badge-title">Leather ankle boots</span>
+        <span class="badge-lines">
+          <span class="badge-rent" hidden><span class="badge-kind">Rent</span><span class="badge-num"></span><i>/day</i></span>
+          <span class="badge-buy"><span class="badge-kind">Buy</span><span class="badge-num">&#3647;1,450</span></span>
+        </span>
+      </a>
     </div>
   </section>
 
-  <!-- HOW IT WORKS -->
-  <section class="how" id="how">
-    <div class="section-label">How it works</div>
-    <h2 class="section-title">Simple as 1 – 2 – 3</h2>
-    <p class="section-sub">From browsing to your doorstep (or pickup), LoopWear makes renting effortless.</p>
-    <div class="steps">
-      <div class="step-card">
-        <div class="step-num">1</div>
-        <h3>Find your fit</h3>
-        <p>Browse thousands of curated pieces by size, style, brand, or occasion — filtered to your city.</p>
+  <!-- HOW LOOPWEAR WORKS -->
+  <section class="hlw" id="how">
+    <div class="section-label">How LoopWear works</div>
+    <h2 class="section-title">Two ways to wear it</h2>
+    <p class="section-sub">Every listing can be rented, bought, or both — the checkout adapts to the path you pick.</p>
+    <div class="hlw-steps">
+      <div class="hlw-step">
+        <div class="hlw-num">STEP 01</div>
+        <h3>Browse &amp; choose</h3>
+        <p>Filter by size, style, brand, and city. Each piece shows its daily rental rate and buy price up front.</p>
+        <ul class="hlw-flows">
+          <li><span class="flow-tag flow-rent">Rent</span> Select the dates you need it</li>
+          <li><span class="flow-tag flow-buy">Buy</span> Add it straight to your bag</li>
+        </ul>
       </div>
-      <div class="step-card">
-        <div class="step-num">2</div>
-        <h3>Book &amp; confirm</h3>
-        <p>Pick your rental dates, send a request, and get approved by the lender — usually within hours.</p>
+      <div class="hlw-step">
+        <div class="hlw-num">STEP 02</div>
+        <h3>Pay securely</h3>
+        <p>Every transaction runs through LoopWear escrow — money is only released once the item is in your hands.</p>
+        <ul class="hlw-flows">
+          <li><span class="flow-tag flow-rent">Rent</span> Deposit held, refunded on safe return</li>
+          <li><span class="flow-tag flow-buy">Buy</span> One payment, ownership transfers on delivery</li>
+        </ul>
       </div>
-      <div class="step-card">
-        <div class="step-num">3</div>
-        <h3>Wear it, return it</h3>
-        <p>Receive the piece, rock it, then ship or drop it back. We handle the damage deposit securely.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-num">4</div>
-        <h3>Earn as a lender</h3>
-        <p>List items you love but rarely wear. Earn 80% of each rental, paid directly to your account.</p>
+      <div class="hlw-step">
+        <div class="hlw-num">STEP 03</div>
+        <h3>Wear it your way</h3>
+        <p>Get the piece shipped or arrange a local pickup with the lender or seller.</p>
+        <ul class="hlw-flows">
+          <li><span class="flow-tag flow-rent">Rent</span> Send it back with the prepaid label</li>
+          <li><span class="flow-tag flow-buy">Buy</span> It's yours — keep it for good</li>
+        </ul>
       </div>
     </div>
   </section>
@@ -698,40 +1110,43 @@
   </div>
   <!-- ════════════════════════════════════════════════════════════ -->
 
-  <!-- WHY LOOPWEAR -->
-  <section class="why" id="why">
-    <div class="section-label">Why LoopWear</div>
-    <h2 class="section-title">Fashion without the guilt</h2>
-    <div class="why-grid">
-      <div class="why-item">
-        <div class="why-icon">♻️</div>
-        <h3>Sustainable</h3>
-        <p>Extend the life of garments and cut textile waste by keeping clothes in circulation longer.</p>
+  <!-- FEATURED COLLECTIONS -->
+  <section class="featured" id="collections">
+    <div class="fc-head">
+      <div>
+        <div class="section-label">Featured collections</div>
+        <h2 class="section-title" style="margin-bottom:0">Handpicked right now</h2>
       </div>
-      <div class="why-item">
-        <div class="why-icon">💰</div>
-        <h3>Affordable luxury</h3>
-        <p>Wear designer labels for a fraction of the retail price — every day or just for one special night.</p>
+      <div class="fc-tabs" aria-label="Filter featured collections">
+        <button class="fc-tab active" type="button" data-filter="all"  aria-pressed="true">All</button>
+        <button class="fc-tab"        type="button" data-filter="rent" aria-pressed="false">Hot Rentals</button>
+        <button class="fc-tab"        type="button" data-filter="buy"  aria-pressed="false">Buy Now</button>
       </div>
-      <div class="why-item">
-        <div class="why-icon">🔒</div>
-        <h3>Secure &amp; trusted</h3>
-        <p>Verified profiles, damage deposits, and a peer-review system keep every transaction safe.</p>
+    </div>
+    <div class="fc-grid" id="fc-grid" role="list" aria-label="Featured pieces">
+      <div class="fc-empty">Loading pieces…</div>
+    </div>
+  </section>
+
+  <!-- TRUST & SECURITY -->
+  <section class="trust" id="trust">
+    <div class="section-label">Trust &amp; security</div>
+    <h2 class="section-title">Every loop, protected</h2>
+    <div class="trust-grid">
+      <div class="trust-item">
+        <div class="trust-icon">🛡️</div>
+        <h3>Authenticity guaranteed</h3>
+        <p>Designer and high-value pieces are verified against brand hallmarks, serial numbers, and proof of purchase before they go live.</p>
       </div>
-      <div class="why-item">
-        <div class="why-icon">🏠</div>
-        <h3>P2P community</h3>
-        <p>Real people, real closets. Discover unique pieces you won't find in any store.</p>
+      <div class="trust-item">
+        <div class="trust-icon">🔒</div>
+        <h3>Escrow payment</h3>
+        <p>Your payment is held safely by LoopWear and only released to the lender or seller once you confirm the item arrived as described.</p>
       </div>
-      <div class="why-item">
-        <div class="why-icon">📦</div>
-        <h3>Easy logistics</h3>
-        <p>Integrated shipping labels, local pickup options, and prepaid return bags — stress-free.</p>
-      </div>
-      <div class="why-item">
-        <div class="why-icon">📱</div>
-        <h3>Instant booking</h3>
-        <p>Approve or request rentals in seconds. Real-time availability calendar for every item.</p>
+      <div class="trust-item">
+        <div class="trust-icon">↩️</div>
+        <h3>Easy returns</h3>
+        <p>Rentals ship with a prepaid return label. Purchases include a 3-day window to report a problem for a full refund.</p>
       </div>
     </div>
   </section>

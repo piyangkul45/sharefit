@@ -5,6 +5,9 @@ const { setAuthCookies, clearAuthCookies } = require('../utils/tokenUtils');
 
 const CRED_ERROR = { error: 'Invalid email or password.' };
 
+// Bump when the Terms/Privacy copy changes materially (mirrors terms-modal.js).
+const TOS_VERSION = '2026-09-03';
+
 // ── Input validation ────────────────────────────────────────────────────────
 
 function validateSignup(email, username, password) {
@@ -38,16 +41,25 @@ async function signup(req, res, next) {
     const rawEmail    = String(req.body.email    || '');
     const rawUsername = String(req.body.username || '').trim();
     const password    = String(req.body.password || '');
+    const termsAccepted = req.body.terms_accepted === true || req.body.terms_accepted === 'true';
 
     const normEmail = validator.normalizeEmail(rawEmail) || rawEmail.toLowerCase();
 
     const errors = validateSignup(normEmail, rawUsername, password);
+    if (!termsAccepted) errors.push('You must accept the Terms of Use and Privacy Policy.');
     if (errors.length) return res.status(400).json({ errors });
+
+    const tosAcceptedAt = new Date().toISOString();
 
     const { data, error } = await supabase.auth.signUp({
       email:    normEmail,
       password,
-      options:  { data: { username: rawUsername } },
+      options:  { data: {
+        username:        rawUsername,
+        tos_accepted:    true,
+        tos_accepted_at: tosAcceptedAt,
+        tos_version:     TOS_VERSION,
+      } },
     });
 
     if (error) {
