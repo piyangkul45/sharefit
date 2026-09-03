@@ -1,4 +1,4 @@
--- ShareFIT — Supabase Setup SQL
+-- LoopWear — Supabase Setup SQL
 -- Run this in: Supabase Dashboard → SQL Editor → New query → Run
 -- Safe to run multiple times (all statements are idempotent).
 

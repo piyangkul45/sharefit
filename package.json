@@ -1,7 +1,7 @@
 {
-  "name": "sharefit",
+  "name": "loopwear",
   "version": "1.0.0",
-  "description": "ShareFIT P2P fashion rental platform",
+  "description": "LoopWear P2P fashion rental platform",
   "main": "server.js",
   "scripts": {
     "setup": "node setup.js",

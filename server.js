@@ -55,5 +55,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`\n  ShareFIT  →  http://localhost:${PORT}\n`);
+  console.log(`\n  LoopWear  →  http://localhost:${PORT}\n`);
 });
